@@ -3,740 +3,1066 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CTES Simulator for DR</title>
+<title>CTES 4 DataCenters — Design Day</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d1117;color:#c9d1d9;font-family:'SF Mono','Cascadia Code',Consolas,monospace;padding:24px 36px;min-height:100vh}
-.pg{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#484f58;margin-bottom:5px}
-h1{font-size:20px;font-weight:400;color:#e6edf3;margin-bottom:3px;letter-spacing:-.3px}
-.sub{font-size:11px;color:#484f58;margin-bottom:20px}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080D1C;--bg2:#0C1626;--card:#101B32;--teal:#2D80C8;--cyan:#5AAADE;--blue:#4A7AC8;--purple:#2D6DB8;--gold:#F5C028;--red:#E53935;--orange:#C05040;--green:#22C55E;--white:#EEF3FA;--gray:#4E6480;--grayL:#8298B4;--f:'Outfit',system-ui,sans-serif;--m:'JetBrains Mono','SF Mono',Consolas,monospace}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--white);font-family:var(--f);display:flex;justify-content:center;align-items:center;padding:8px}
+.root{width:100%;height:100%;max-width:1600px;display:flex;flex-direction:column;gap:6px}
 
-.sliders{display:grid;grid-template-columns:1fr 1fr;gap:6px 40px;margin-bottom:18px}
-.sr{display:flex;align-items:center;gap:12px}
-.sl{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#484f58;min-width:130px}
-input[type=range]{-webkit-appearance:none;width:220px;height:2px;background:#21262d;outline:none;border-radius:1px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#e6edf3;cursor:pointer;border:2px solid #0d1117;box-shadow:0 0 0 1px #484f58}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#e6edf3;cursor:pointer;border:2px solid #0d1117;box-shadow:0 0 0 1px #484f58}
-.sv{font-size:17px;font-weight:400;color:#e6edf3;min-width:110px}
-.sv em{font-size:10px;font-style:normal;color:#484f58;margin-left:3px}
-.sv .am{color:#ffffff} .sv .dr{color:#60a5fa}
+/* Top bar */
+.top{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:0 4px}
+.top-left{display:flex;align-items:center;gap:10px}
+.step-badge{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.step-badge.sb1{background:linear-gradient(135deg,#1E293B,#334155);color:var(--grayL);border:1px solid rgba(255,255,255,0.1)}
+.step-badge.sb2{background:linear-gradient(135deg,var(--purple),var(--teal));color:var(--white)}
+.top h1{font-size:18px;font-weight:800}
+.top-stats{display:flex;gap:10px}
+.ts{background:var(--card);border-radius:12px;padding:12px 18px;border:1px solid rgba(255,255,255,0.05);text-align:center;min-width:110px}
+.ts.ts-temp,.ts.ts-pue{border:1px solid rgba(251,191,36,0.35);background:linear-gradient(180deg,rgba(251,191,36,0.06),var(--card))}
+.ts .tl{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);font-weight:600;margin-bottom:3px}
+.ts.ts-temp .tl,.ts.ts-pue .tl{color:var(--gold)}
+.ts .tv{font-family:var(--m);font-size:32px;font-weight:700}
+.ts .tsx{font-size:10px;color:var(--gray);margin-top:2px}
+.connector{display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:var(--gold);opacity:0.85;padding:0 2px;align-self:stretch}
 
-.btnrow{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.blbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#484f58;margin-right:4px}
-.btn{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:20px;border:1px solid transparent;background:transparent;cursor:pointer;font-family:inherit;font-size:11px;transition:all .15s;user-select:none}
-.btn.on{border-color:var(--c);background:rgba(255,255,255,.05);color:var(--c)}
-.btn.off{border-color:#30363d;color:#484f58;opacity:.45}
-.btn .dot{width:7px;height:7px;border-radius:50%;background:var(--c);flex-shrink:0}
-.btn.off .dot{background:#484f58}
+/* Main area */
+.main{flex:1;display:flex;gap:10px;min-height:0}
 
-.statrow{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#21262d;border:1px solid #21262d;border-radius:6px;overflow:hidden;margin-bottom:16px}
-.sc{background:#0d1117;padding:11px 13px}
-.sk{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#484f58;margin-bottom:4px;line-height:1.3}
-.sv2{font-size:19px;font-weight:400;line-height:1}
-.ss{font-size:10px;margin-top:3px;color:#484f58}
-.cp{color:#d2a8ff}.ca{color:#ffffff}.cg{color:#39d353}.co{color:#ffffff}.cw{color:#e6edf3}
-.cc{color:#38bdf8} /* cyan for indirect */
+/* Left panel */
+.left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;min-height:0}
+.phase-card{background:var(--card);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.05);flex-shrink:0}
+.phase-card .pc-step{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray);font-weight:700;margin-bottom:4px}
+.phase-card .pc-title{font-size:16px;font-weight:800;margin-bottom:6px;line-height:1.2}
+.phase-card .pc-desc{font-size:12px;color:var(--grayL);line-height:1.5}
 
-.ct{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#484f58;margin-bottom:5px}
-canvas{display:block;width:100%}
-#mainCanvas{height:300px}
-#ambCanvas{height:96px;border-top:1px solid #161b22}
-.dv{height:1px;background:#21262d;margin:16px 0}
-.ib{border:1px solid #21262d;border-left:3px solid #ffffff;border-radius:0 6px 6px 0;padding:11px 15px;font-size:11px;color:#8b949e;line-height:1.75}
-.ib b{color:#e6edf3;font-weight:400}
-.ib .p{color:#d2a8ff}.ib .o{color:#ffffff}.ib .a{color:#ffffff}.ib .g{color:#39d353}.ib .c{color:#38bdf8}.ib .dr{color:#60a5fa}
+/* Insight card (changes with animation) */
+.insight{background:var(--card);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.05);flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;transition:border-color 0.4s}
+.insight.glow-r{border-color:rgba(229,57,53,0.3)}
+.insight.glow-t{border-color:rgba(45,128,200,0.35)}
+.insight .in-time{font-family:var(--m);font-size:24px;font-weight:700;margin-bottom:2px}
+.insight .in-headline{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.insight .in-body{font-size:11px;color:var(--grayL);line-height:1.6;flex:1}
+.insight .in-body strong{color:var(--white);font-weight:600}
+.insight .in-body .r{color:var(--red)}.insight .in-body .t{color:var(--teal)}.insight .in-body .g{color:var(--gold)}.insight .in-body .mm{font-family:var(--m);font-size:11px}
 
-/* legend row */
-.legend{display:flex;gap:16px;margin-bottom:6px;flex-wrap:wrap;font-size:10px;color:#484f58;align-items:center}
-.li{display:flex;align-items:center;gap:5px}
-.lb{width:18px;height:3px;border-radius:1px;flex-shrink:0}
-.lsq{width:10px;height:10px;border-radius:2px;flex-shrink:0;opacity:.7}
+/* Metric pills in insight */
+.metric-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.metric{background:rgba(0,0,0,0.25);border-radius:8px;padding:6px 8px;border-left:3px solid}
+.metric .m-label{font-size:8px;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);font-weight:600}
+.metric .m-val{font-family:var(--m);font-size:15px;font-weight:700;margin-top:1px}
+
+/* Right: charts */
+.right{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.chart-box{background:var(--card);border-radius:12px;padding:10px 12px 6px;border:1px solid rgba(255,255,255,0.05);position:relative;display:flex;flex-direction:column}
+.chart-power{flex:1;min-height:0}
+.chart-title{font-size:18px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.chart-title span{font-size:14px;font-weight:500;color:var(--grayL)}
+canvas{display:block;width:100%;height:100%;border-radius:6px}
+.legend{display:flex;gap:22px;justify-content:center;margin-top:10px;flex-wrap:wrap;padding:8px 0}
+.legend span{font-size:15px;color:var(--white);display:flex;align-items:center;gap:8px;font-weight:600}
+.legend .dot{width:14px;height:14px;border-radius:50%}
+.legend .dot-stripe{width:14px;height:14px;border-radius:50%;background:repeating-linear-gradient(45deg,var(--teal),var(--teal) 2px,rgba(45,128,200,0.3) 2px,rgba(45,128,200,0.3) 4px)}
+
+/* Concise chart callouts — positioned right side */
+.ccall{position:absolute;right:14px;z-index:20;background:rgba(10,15,28,0.94);border-radius:12px;padding:14px 16px;width:260px;border:2px solid;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateX(8px);backdrop-filter:blur(6px);box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.ccall.show{opacity:1;pointer-events:auto;transform:translateX(0)}
+.cc-head{font-size:15px;font-weight:800;margin-bottom:8px;letter-spacing:0.3px}
+.cc-msg{font-size:13px;color:var(--white);line-height:1.45;font-weight:500;margin-bottom:10px}
+.cc-info{display:block;width:100%;height:auto}
+.cc-info svg{display:block;width:100%;height:auto;border-radius:6px}
+
+/* Play overlay */
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,15,28,0.75);z-index:50;cursor:pointer;border-radius:12px;transition:opacity 0.4s}
+.overlay.hidden{opacity:0;pointer-events:none}
+.ov-btn{width:90px;height:90px;border-radius:50%;border:3px solid var(--teal);background:rgba(45,128,200,0.12);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:36px;transition:all 0.3s;backdrop-filter:blur(6px)}
+.ov-btn:hover{background:var(--teal);color:var(--white);transform:scale(1.05)}
+.ov-text{margin-top:14px;font-size:16px;font-weight:700;color:var(--white)}
+.ov-sub{margin-top:4px;font-size:12px;color:var(--grayL)}
+
+/* Bottom bar */
+.bottom{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:2px 4px}
+.big-btn{padding:10px 28px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all 0.25s;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.big-btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-play{background:var(--teal);color:var(--white)}
+.btn-next{background:linear-gradient(135deg,var(--purple),var(--teal));color:var(--white)}
+.btn-restart{background:var(--card);color:var(--grayL);border:1px solid rgba(255,255,255,0.1)}
+
+.tl-wrap{flex:1;min-width:0}
+.tl-bg{width:100%;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;cursor:pointer}
+.tl-fill{height:100%;border-radius:3px;transition:width 0.08s linear;background:linear-gradient(90deg,var(--blue),var(--orange),var(--red));background-size:400%}
+.tl-fill.sol{background:linear-gradient(90deg,var(--purple),var(--teal),var(--cyan));background-size:400%}
+.tl-hr{display:flex;justify-content:space-between;margin-top:2px}
+.tl-hr span{font-size:7px;color:var(--gray);font-family:var(--m)}
+.sp{display:flex;gap:3px;flex-shrink:0}
+.sp button{padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--gray);font-size:10px;font-family:var(--m);cursor:pointer;transition:all 0.2s}
+.sp button.on{background:rgba(45,128,200,0.15);border-color:var(--teal);color:var(--teal)}
+
+/* Centered Continue overlay (pause points) */
+.pause-overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;pointer-events:none;opacity:0;transition:opacity 0.35s}
+.pause-overlay.visible{opacity:1;pointer-events:auto}
+.pause-backdrop{position:absolute;inset:0;background:transparent}
+.pause-bubble{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;animation:pausePop 0.35s cubic-bezier(0.34,1.56,0.64,1) both}
+@keyframes pausePop{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
+.pause-btn{width:55px;height:55px;border-radius:50%;border:2px solid var(--teal);background:rgba(45,128,200,0.14);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all 0.25s;box-shadow:0 0 20px rgba(45,128,200,0.35)}
+.pause-btn:hover{background:var(--teal);color:var(--white);transform:scale(1.08);box-shadow:0 0 36px rgba(45,128,200,0.6)}
+.pause-label{font-size:13px;font-weight:800;color:var(--white);letter-spacing:0.5px;text-shadow:0 2px 12px rgba(0,0,0,0.8)}
+.pause-sub{font-size:10px;color:var(--grayL);margin-top:-4px}
+
+/* End-of-day-1 transition overlay */
+.transition-overlay{position:absolute;top:44px;left:92px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;z-index:200;pointer-events:none;opacity:0;transition:opacity 0.4s;transform-origin:top left;transform:scale(0.7)}
+.transition-overlay.visible{opacity:1;pointer-events:auto}
+.tr-bubble{display:flex;flex-direction:column;align-items:flex-start;gap:11px;animation:trPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both}
+@keyframes trPop{from{transform:scale(0.75) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.tr-message{font-size:17px;font-weight:700;color:var(--white);text-align:left;max-width:280px;line-height:1.5;text-shadow:0 2px 16px rgba(0,0,0,0.9);background:rgba(10,15,28,0.72);border-radius:10px;padding:8px 12px;backdrop-filter:blur(4px)}
+.tr-message em{color:var(--teal);font-style:normal}
+.tr-btn{display:flex;align-items:center;gap:10px;padding:12px 24px;border-radius:30px;border:2px solid var(--teal);background:rgba(45,128,200,0.12);color:var(--teal);font-size:14px;font-weight:800;cursor:pointer;transition:all 0.25s;letter-spacing:0.4px;box-shadow:0 0 24px rgba(45,128,200,0.25)}
+.tr-btn:hover{background:var(--teal);color:var(--white);box-shadow:0 0 40px rgba(45,128,200,0.5);transform:scale(1.04)}
+.tr-btn .tr-icon{font-size:18px}
+
+/* CTES 4 DataCenters capacity indicator — inline in top stats row */
+.ts.ts-ib{border:1.5px solid rgba(45,128,200,0.55);background:linear-gradient(180deg,rgba(45,128,200,0.10),var(--card));min-width:160px;display:none;align-items:center;gap:10px;text-align:left;padding:10px 16px}
+.ts.ts-ib.show{display:flex}
+.ts.ts-ib .ib-icon{font-size:20px;line-height:1;flex-shrink:0}
+.ts.ts-ib .ib-text{display:flex;flex-direction:column;gap:1px}
+.ts.ts-ib .tl{color:rgba(45,128,200,0.85);margin-bottom:2px}
+.ts.ts-ib .tv{font-size:22px;color:#5AAADE;white-space:nowrap}
+.ts.ts-ib .ib-pct{font-size:13px;color:rgba(245,192,40,0.9);font-weight:700;margin-left:3px}
+
+/* ── Config / Opening page ── */
+#configPage{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity 0.5s}
+#configPage.hidden{opacity:0;pointer-events:none}
+.cfg-card{background:var(--card);border-radius:20px;padding:40px 48px;border:1px solid rgba(255,255,255,0.08);max-width:540px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+.cfg-logo{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+.cfg-title{font-size:26px;font-weight:800;margin-bottom:4px}
+.cfg-sub{font-size:13px;color:var(--grayL);margin-bottom:32px;line-height:1.5}
+.cfg-label{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;color:var(--grayL);margin-bottom:6px}
+.cfg-val{font-family:var(--m);font-size:28px;font-weight:700;color:var(--teal);margin-bottom:10px}
+.cfg-val span{font-size:14px;color:var(--gray);font-weight:400;font-family:var(--f);margin-left:4px}
+.cfg-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,0.08);outline:none;cursor:pointer;margin-bottom:4px}
+.cfg-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--teal);cursor:pointer;box-shadow:0 0 0 3px rgba(45,128,200,0.25)}
+.cfg-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--teal);cursor:pointer;border:none}
+.cfg-range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--gray);font-family:var(--m);margin-bottom:24px}
+.cfg-derived{background:rgba(45,128,200,0.06);border:1px solid rgba(45,128,200,0.2);border-radius:10px;padding:12px 16px;margin-bottom:28px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cfg-derived-item .cd-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:600;margin-bottom:2px}
+.cfg-derived-item .cd-val{font-family:var(--m);font-size:15px;font-weight:700;color:var(--white)}
+.cfg-run{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--teal));color:var(--white);font-size:15px;font-weight:800;border:none;cursor:pointer;letter-spacing:0.5px;transition:all 0.25s}
+.cfg-run:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.cfg-divider{height:1px;background:rgba(255,255,255,0.07);margin:24px 0}
 </style>
 </head>
 <body>
+<div id="configPage">
+  <div class="cfg-card">
+    <div class="cfg-logo">⚡ CTES 4 DataCenters — Design Day Simulator</div>
+    <div class="cfg-title">Configure Your Data Center</div>
+    <div class="cfg-sub">Set your facility parameters. The simulation will calculate all power allocations, PUE curves, and CTES 4 DataCenters sizing accordingly.</div>
 
-<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px">
-<div>
-<p class="pg">DataBank · SLC-5 · Cooling Analysis</p>
-<h1 style="color:#e53e3e;font-weight:700">CTES Simulator for DR</h1>
-</div>
-<img src="https://i.ibb.co/0jYTSJVz/2026-austin-conf-blue-and-green-01.png" alt="CTES reference" style="height:64px;border-radius:6px;border:1px solid #21262d;flex-shrink:0;object-fit:contain" onerror="this.style.display='none'">
-</div>
-<p class="sub">SLC summer design day (ASHRAE 0.4%) · Air-cooled chillers · 70% chiller load baseline · kW/ton from SLC-5 actuals Jul 30–Aug 1 2025 · Indirect efficiency: 0.8% per 1% load reduction</p>
+    <div class="cfg-label">IT Nameplate Power Capacity</div>
+    <div class="cfg-val" id="cfgItVal">7.0 <span>MW</span></div>
+    <input type="range" class="cfg-slider" id="cfgIt" min="5" max="10" step="0.1" value="7">
+    <div class="cfg-range-labels"><span>5 MW</span><span>10 MW</span></div>
 
-<div class="sliders">
-  <div class="sr">
-    <span class="sl">DC cooling load</span>
-    <input type="range" id="rtSlider" min="500" max="5000" step="50" value="2200">
-    <div class="sv"><span id="rtVal">2,200</span><em>RT</em></div>
-  </div>
-  <div class="sr">
-    <span class="sl">DR window start</span>
-    <input type="range" id="drSSlider" min="6" max="21" step="1" value="10">
-    <div class="sv"><span id="drSVal" class="dr">10 am</span></div>
-  </div>
-  <div class="sr">
-    <span class="sl">IceBrick storage</span>
-    <input type="range" id="sSlider" min="1000" max="15000" step="25" value="1000">
-    <div class="sv"><span id="sVal">1000</span><em class="am">RT-h</em></div>
-  </div>
-  <div class="sr">
-    <span class="sl">DR window end</span>
-    <input type="range" id="drESlider" min="7" max="23" step="1" value="18">
-    <div class="sv"><span id="drEVal" class="dr">6 pm</span></div>
+    <div class="cfg-label">Peak PUE at Design Day</div>
+    <div class="cfg-val" id="cfgPueVal">1.60 <span>at peak</span></div>
+    <input type="range" class="cfg-slider" id="cfgPue" min="1.20" max="2.20" step="0.01" value="1.60">
+    <div class="cfg-range-labels"><span>1.20 (excellent)</span><span>2.20 (poor)</span></div>
+
+    <div class="cfg-divider"></div>
+
+    <div class="cfg-label" style="margin-bottom:10px">Derived Parameters</div>
+    <div class="cfg-derived">
+      <div class="cfg-derived-item"><div class="cd-label">Grid Operational Limit</div><div class="cd-val" id="cfgGL">— MW</div></div>
+      <div class="cfg-derived-item"><div class="cd-label">CTES 4 DataCenters Unlock</div><div class="cd-val" id="cfgUnlock">— MW</div></div>
+      <div class="cfg-derived-item"><div class="cd-label">Peak Cooling Load (no IB)</div><div class="cd-val" id="cfgCoolPeak">— MW</div></div>
+      <div class="cfg-derived-item"><div class="cd-label">Night Cooling Load</div><div class="cd-val" id="cfgCoolNight">— MW</div></div>
+    </div>
+
+    <button class="cfg-run" id="cfgRunBtn">▶ Run Design Day Simulation</button>
   </div>
 </div>
 
-<div class="btnrow">
-  <span class="blbl">Streams</span>
-  <button id="btn-kw"       class="btn on" style="--c:#d2a8ff" onclick="tog('kw')">      <span class="dot"></span>MW demand</button>
-  <button id="btn-kwtr"     class="btn on" style="--c:#ffffff" onclick="tog('kwtr')">    <span class="dot"></span>kW/TR</button>
-  <button id="btn-ambient"  class="btn on" style="--c:#39d353" onclick="tog('ambient')"> <span class="dot"></span>Ambient °F</button>
-  <button id="btn-icebrick" class="btn on" style="--c:#ffffff" onclick="tog('icebrick')"><span class="dot"></span>Direct savings</button>
-  <button id="btn-indirect" class="btn on" style="--c:#38bdf8" onclick="tog('indirect')"><span class="dot"></span>Indirect efficiency bonus</button>
+<div class="root">
+  <!-- Top bar -->
+  <div class="top">
+    <div class="top-left">
+      <div class="step-badge sb1" id="badge">DESIGN DAY · STEP 1 OF 2</div>
+      <h1 id="topTitle">Design Day Without CTES — <span style="color:var(--grayL)">The Constraint</span></h1>
+    </div>
+    <img src="https://i.ibb.co/0jYTSJVz/2026-austin-conf-blue-and-green-01.png" alt="2026 Austin Conference" style="height:38px;object-fit:contain;flex-shrink:0;margin-left:4px;">
+    <div class="top-stats">
+      <div class="ts"><div class="tl">Time</div><div class="tv" id="stTime" style="color:var(--teal)">00:00</div></div>
+      <div class="ts ts-temp"><div class="tl">Outside Temp</div><div class="tv" id="stTemp" style="color:var(--gold)">72°F</div></div>
+      <div class="connector" title="PUE responds to outside temperature">→</div>
+      <div class="ts ts-pue"><div class="tl">Realtime PUE</div><div class="tv" id="stPUE" style="color:var(--gold)">1.37</div><div class="tsx" id="stPUES">tracks temp</div></div>
+      <div class="ts ts-ib" id="ibIndicator">
+        <div class="ib-icon">❄</div>
+        <div class="ib-text">
+          <div class="tl">Unlocked IT Stranded Capacity</div>
+          <div class="tv" id="ibUnlockVal">+2.1 MW<span class="ib-pct" id="ibUnlockPct">(10.5%)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Left panel -->
+    <div class="left">
+      <div class="phase-card" id="phaseCard">
+        <div class="pc-step" id="pcStep">Step 1 of 2</div>
+        <div class="pc-title" id="pcTitle">The Design Day Problem</div>
+        <div class="pc-desc" id="pcDesc">Your data center has an operational limit, but on the hottest day, cooling demand pushes total power right up to the ceiling. Configure parameters above and run the simulation.</div>
+      </div>
+      <div class="insight" id="insight">
+        <div class="in-time" id="inTime" style="color:var(--teal)">00:00</div>
+        <div class="in-headline" id="inHead">Midnight — Steady State</div>
+        <div class="in-body" id="inBody">
+          Press the play button on the chart to watch the design day unfold. You'll see how rising temperatures push cooling demand up, stealing power from compute.
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: charts -->
+    <div class="right">
+      <div class="chart-box chart-power" id="powerBox">
+        <div class="chart-title">⚡ Design Day Power Allocation <span id="chartSub">— without CTES</span></div>
+        <canvas id="powerChart"></canvas>
+        <div class="legend" id="chartLegend"></div>
+
+        <!-- Concise callouts on the chart -->
+        <div class="ccall" id="cc1" style="border-color:#F57C00">
+          <div class="cc-head" id="cc1h" style="color:#F57C00">☀ Heat Climbing</div>
+          <div class="cc-msg" id="cc1msg">Hotter air outside means the chiller plant must work harder for the same cooling.</div>
+          <div class="cc-info" id="cc1i"></div>
+        </div>
+        <div class="ccall" id="cc2" style="border-color:#E53935">
+          <div class="cc-head" id="cc2h" style="color:#E53935">🔥 Peak — At the Limit</div>
+          <div class="cc-msg" id="cc2msg">Cooling pushes the stack to the operational limit. No room left for more compute.</div>
+          <div class="cc-info" id="cc2i"></div>
+        </div>
+        <div class="ccall" id="cc3" style="border-color:#2D80C8">
+          <div class="cc-head" id="cc3h" style="color:#2D80C8">❄ CTES Discharging</div>
+          <div class="cc-msg" id="cc3msg">Stored cooling offsets most of the chiller plant load — freeing grid capacity for the extra IT capacity.</div>
+          <div class="cc-info" id="cc3i"></div>
+        </div>
+        <!-- End-of-day-1 transition overlay (upper-left of chart) -->
+        <div class="transition-overlay" id="transitionOverlay">
+          <div class="tr-bubble">
+            <div class="tr-message">Now let's see how the <em>CTES system</em> reshapes the power allocation.</div>
+            <button class="tr-btn" id="trBtn"><span class="tr-icon">▶</span> Play CTES Day</button>
+          </div>
+        </div>
+        <!-- Play overlay -->
+        <div class="overlay" id="overlay">
+          <div class="ov-btn" id="ovBtn">▶</div>
+          <div class="ov-text">Watch the Design Day</div>
+          <div class="ov-sub">See how temperature steals your compute budget</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom">
+    <button class="big-btn btn-play" id="bigBtn">▶ Play</button>
+    <div class="tl-wrap">
+      <div class="tl-bg" id="tlbg"><div class="tl-fill" id="tlfill"></div></div>
+      <div class="tl-hr"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+    </div>
+    <div class="sp">
+      <button id="s1" onclick="setSpeed(1)">1×</button>
+      <button id="s2" onclick="setSpeed(2)">2×</button>
+      <button id="s4" onclick="setSpeed(4)">4×</button>
+      <button id="s6" onclick="setSpeed(6)">6×</button>
+      <button id="s8" onclick="setSpeed(8)" class="on">8×</button>
+    </div>
+  </div>
 </div>
 
-<div class="statrow">
-  <div class="sc">
-    <div class="sk">Baseline peak</div>
-    <div class="sv2 cp" id="sBase">—</div>
-    <div class="ss">101 °F · 70% load · SLC-5</div>
-  </div>
-  <div class="sc">
-    <div class="sk">Shaved peak</div>
-    <div class="sv2 ca" id="sShaved">—</div>
-    <div class="ss" id="sSub">set storage →</div>
-  </div>
-  <div class="sc">
-    <div class="sk">Direct savings · peak hour</div>
-    <div class="sv2 ca" id="sDirect">—</div>
-    <div class="ss">storage displacement</div>
-  </div>
-  <div class="sc">
-    <div class="sk">Indirect bonus · peak hour</div>
-    <div class="sv2 cc" id="sIndirect">—</div>
-    <div class="ss" id="sIndPct">efficiency improvement</div>
-  </div>
-  <div class="sc" style="background:#3b0a0a;border-left:3px solid #e53e3e">
-    <div class="sk" style="color:#fc8181">RT-h / kW</div>
-    <div class="sv2 co" id="sWin">—</div>
-    <div class="ss" id="sWinR">RT-h per kW peak reduction</div>
+<!-- Centered Continue overlay (shown at auto-pause points) -->
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-backdrop"></div>
+  <div class="pause-bubble">
+    <button class="pause-btn" id="pauseOvBtn">▶</button>
+    <div class="pause-label">Continue</div>
+    <div class="pause-sub">Click to resume the animation</div>
   </div>
 </div>
 
-<div class="legend">
-  <span style="color:#6b7280;font-size:10px;letter-spacing:1px">CHART LEGEND</span>
-  <span class="li"><span class="lb" style="background:#d2a8ff"></span>MW demand baseline</span>
-  <span class="li"><span class="lb" style="background:#ffffff"></span>kW/TR efficiency</span>
-  <span class="li"><span class="lsq" style="background:#ffffff"></span>Direct savings (storage)</span>
-  <span class="li"><span class="lsq" style="background:#38bdf8"></span>Indirect bonus (efficiency)</span>
-  <span class="li"><span class="lb" style="background:#60a5fa;opacity:.5;height:1px;border-top:1px dashed #60a5fa"></span>DR window</span>
-</div>
-
-<p class="ct">MW demand · kW/TR · 06:00 – 24:00</p>
-<div style="position:relative">
-  <canvas id="mainCanvas" aria-label="Chiller MW demand with IceBrick peak shaving zones and DR window"></canvas>
-  <canvas id="hairCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></canvas>
-</div>
-<div id="ambWrap"><canvas id="ambCanvas" aria-label="SLC ambient temperature"></canvas></div>
-<div class="dv"></div>
-<div class="ib" id="insight">Loading…</div>
+<!-- transition overlay moved inside powerBox -->
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────────────
-// Original hourly anchor values (6 am – 11 pm)
-const AMB_H = [76,79,83,87,91,95,98,100,101,101,100,98,95,91,88,85,83,81];
-const HL_H  = ['6 am','7 am','8 am','9 am','10 am','11 am','12 pm',
-               '1 pm','2 pm','3 pm','4 pm','5 pm','6 pm',
-               '7 pm','8 pm','9 pm','10 pm','11 pm'];
+document.addEventListener('DOMContentLoaded', function(){
 
-// Catmull-Rom interpolation → quarter-hourly resolution (4 steps per hour)
-function crInterp(vals, steps=4){
-  const n=vals.length, out=[];
-  for(let i=0;i<n-1;i++){
-    const p0=vals[Math.max(i-1,0)],p1=vals[i],p2=vals[i+1],p3=vals[Math.min(i+2,n-1)];
-    for(let s=0;s<steps;s++){
-      const t=s/steps;
-      out.push(0.5*(2*p1+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t*t*t));
-    }
-  }
-  out.push(vals[n-1]);
-  return out;
-}
-const AMB = crInterp(AMB_H, 4); // 69 quarter-hourly ambient values
-const N   = AMB.length;          // 69  (17 hour-intervals × 4 + 1)
-const DT  = 0.25;                // time step = 15 min = 0.25 h
+// ── User-configurable parameters (set by sliders) ──
+var USER_IT=7;    // IT nameplate MW
+var USER_MAXP=1.60; // peak PUE
 
-// Labels: hourly text at every 4th point, blank otherwise
-const HL = Array.from({length:N}, (_,i) => i%4===0 ? HL_H[i/4] : '');
+// ── Derived constants (recomputed by rebuild()) ──
+var GL,C_NO,IT_UNLOCK_PCT,ANC,MINP,MAXP,C2H,IB_FRAC,CHG_MW,CHG_BUFFER;
+var IT_BASE,IT_UNLOCK,C_IB;
+var CHG_S=22,CHG_E=10,DIS_S=10,DIS_E=22;
+var N=96;
+var MONO='"JetBrains Mono","SF Mono",Consolas,monospace';
+var SANS='"Outfit",system-ui,sans-serif';
 
-// kW/ton calibrated to SLC-5 actuals Jul 30–Aug 1 2025, 70% system load
-// 1.08 kW/ton @ 67°F (night) → 1.43 kW/ton @ 99°F (peak), slope 0.0109/°F
-const ANC = [[50,0.89],[60,1.00],[70,1.11],[80,1.22],[90,1.33],[100,1.44]];
-
-function kwtr(T){
-  T=Math.max(50,Math.min(100,T));
-  for(let i=0;i<ANC.length-1;i++){
-    const[t0,v0]=ANC[i],[t1,v1]=ANC[i+1];
-    if(T>=t0&&T<=t1) return v0+(v1-v0)*(T-t0)/(t1-t0);
-  }
-  return ANC[ANC.length-1][1];
-}
-const KR = AMB.map(kwtr);   // kW/ton per hour
-const fmt = kw => (kw/1000).toFixed(2)+' MW';
-
-const BLOAD   = 70;          // baseline load %
-const EFF_K   = BLOAD*0.008; // = 0.56 — efficiency improvement constant
-// Each 1% load reduction from BLOAD gives 0.8% kW/ton improvement
-// Factor = 1 - EFF_K × (q_s/RT)
-
-// ── STATE ─────────────────────────────────────────────────────────────────────
-let RT=2200, S=1000, drStart=10, drEnd=18;
-let BASE=[], PEAK=0, animTgt=0;
-let rafId=null;
-const ON={kw:true,kwtr:true,ambient:true,icebrick:true,indirect:true};
-
-function hLabel(h){
-  if(h===12) return '12 pm';
-  if(h<12) return h+' am';
-  return (h-12)+' pm';
+function deriveConstants(itMW, peakPUE){
+  USER_IT   = itMW;
+  USER_MAXP = peakPUE;
+  MINP  = parseFloat(Math.max(1.05, peakPUE - 0.20).toFixed(2));  // night PUE = peak - 0.20
+  MAXP  = peakPUE;
+  C2H   = 0.98;
+  ANC   = itMW * 0.075;  // ancillary scales with IT size (~7.5%)
+  C_NO  = itMW;          // problem-mode IT = nameplate
+  // CTES unlocks ~10.5% more IT (fixed %)
+  IT_UNLOCK_PCT = 0.105;
+  IT_UNLOCK = parseFloat((itMW * IT_UNLOCK_PCT).toFixed(2));
+  IT_BASE   = C_NO;
+  C_IB      = C_NO + IT_UNLOCK;
+  // Grid limit = IT + ANC + actual peak cooling (PUE now capped, so this is exact)
+  var peakCoolNoIB = Math.max(0.3, C_NO*(peakPUE-1) - ANC);
+  GL = parseFloat((C_NO + ANC + peakCoolNoIB * 1.05).toFixed(1));
+  // CTES charging power scales with IT size
+  CHG_MW  = parseFloat((itMW * 0.075).toFixed(2));
+  IB_FRAC = 0.40;
+  CHG_BUFFER = 0;  // charging hard-capped to GL directly
 }
 
-// ── ANALYTICAL SOLVER FOR q_s ─────────────────────────────────────────────────
-// Given hour h and target kW, find RT displaced (q_s) accounting for efficiency
-// Equation: (RT-q_s) × KR[h] × (1 - EFF_K×q_s/RT) = kwT
-// Let x = q_s/RT → (1-x)(1-EFF_K·x) = kwT/BASE[h] = k
-// Expand: EFF_K·x² - (1+EFF_K)x + (1-k) = 0
-// x = [(1+EFF_K) - sqrt((1+EFF_K)²-4·EFF_K·(1-k))] / (2·EFF_K)
-function findQs(h, kwT){
-  if(kwT >= BASE[h]) return 0;       // no discharge needed
-  if(kwT <= 0) return RT*0.95;       // cap at 95% displacement
-  const k = kwT / BASE[h];           // target fraction of baseline
-  const a = EFF_K, b = 1+EFF_K, c = 1-k;
-  const disc = b*b - 4*a*c;
-  if(disc < 0) return 0;
-  const x = (b - Math.sqrt(disc)) / (2*a);  // smaller root
-  return Math.min(RT*0.95, Math.max(0, x*RT));
+function sig(x,c,s){return 1/(1+Math.exp(-s*(x-c)))}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function getTemp(h){var minT=20,maxT=41,hh=h<6?h+24:h,t;if(hh<15){t=(1-Math.cos((hh-6)/9*Math.PI))/2}else{t=(1+Math.cos((hh-15)/15*Math.PI))/2}return minT+(maxT-minT)*t}
+function getPUE(h){var env=Math.max(0,sig(h,11,1)-sig(h,19.5,1));return MINP+(MAXP-MINP)*(env/0.9719)}
+function isChg(h){return h>=CHG_S||h<CHG_E}
+function isDis(h){return h>=DIS_S&&h<DIS_E}
+function getSoC(h){if(isChg(h)){var el=h>=CHG_S?(h-CHG_S):(h+24-CHG_S);return clamp(el/12,0,1)}if(isDis(h)){return clamp(1-(h-DIS_S)/12,0,1)}return h<DIS_S?1:0}
+
+// Taper over the last TAPER_H hours of each cycle → smoothly reaches 0 at transition
+var TAPER_H=1.5;
+function chgTaper(h){
+  // Charging ends at CHG_E=10; position in cycle = hours since CHG_S (wrapping midnight)
+  var el=h>=CHG_S?(h-CHG_S):(h+24-CHG_S); // 0..12
+  var remaining=12-el; // hours left in charging cycle
+  if(remaining>=TAPER_H)return 1;
+  return Math.max(0,remaining/TAPER_H);
+}
+function disTaper(h){
+  // Discharge ends at DIS_E=22; position = h-DIS_S
+  var el=h-DIS_S; // 0..12
+  var remaining=12-el;
+  if(remaining>=TAPER_H)return 1;
+  return Math.max(0,remaining/TAPER_H);
+}
+function chgEaseIn(h){
+  // Ease in at start of charging cycle (CHG_S=22)
+  var el=h>=CHG_S?(h-CHG_S):(h+24-CHG_S); // 0..12
+  if(el>=TAPER_H)return 1;
+  var t=el/TAPER_H;
+  return t*t*(3-2*t); // smoothstep
+}
+function disEaseIn(h){
+  // Ease in at start of discharge cycle (DIS_S=10)
+  var el=h-DIS_S; // 0..12
+  if(el>=TAPER_H)return 1;
+  var t=el/TAPER_H;
+  return t*t*(3-2*t); // smoothstep
 }
 
-// noEffKw: what kW would be with ONLY direct savings (no efficiency improvement)
-function noEffKw(h, q_s){ return (RT-q_s)*KR[h]; }
+// Precompute — built by rebuild(), called after slider confirmation
+var dP=[],dS=[],dT=[];
 
-// ── OUTER SOLVER: find kW cut-line s.t. Σ q_s = S within DR window ───────────
-function solve(S){
-  if(S<=0) return PEAK;
-  const drA=(drStart-6)*4, drB=(drEnd-6)*4;
-  let lo=0, hi=PEAK;
-  for(let i=0;i<80;i++){
-    const kwT=(lo+hi)/2;
-    let sum=0;
-    for(let h=drA;h<drB;h++) sum+=findQs(h,kwT)*DT; // ×0.25 h → RT-h
-    sum>S ? lo=kwT : hi=kwT;
-  }
-  return (lo+hi)/2;
-}
+function rebuild(){
+  dP=[];dS=[];dT=[];
+  for(var i=0;i<N;i++){
+    var h=i/N*24,temp=getTemp(h),pue=getPUE(h);
+    var comp=C_NO,cool=Math.max(0.3,comp*(pue-1)-ANC),tot=comp+ANC+cool;
+    var rt=C2H*comp/3.517*1000,kwrt=1000*cool/rt;
+    dP.push({h:h,temp:temp,pue:pue,comp:comp,anc:ANC,cool:cool,total:tot,kwrt:kwrt,charge:0,ibCool:0,soc:0});
 
-// ── BREAKDOWN CALCULATION ─────────────────────────────────────────────────────
-function breakdown(kwT){
-  const drA=(drStart-6)*4, drB=(drEnd-6)*4;
-  let totalRth=0, totalDirMWh=0, totalIndMWh=0;
-  let peakDirMW=0, peakIndMW=0;
-  // Highest-BASE discharge point in DR window
-  let peakH=drA;
-  for(let h=drA;h<drB;h++) if(BASE[h]>BASE[peakH]) peakH=h;
-
-  for(let h=drA;h<drB;h++){
-    if(BASE[h]<=kwT) continue;
-    const q_s=findQs(h,kwT);
-    const nek=noEffKw(h,q_s);
-    const dirKW = q_s*KR[h];
-    const indKW = nek-kwT;
-    totalDirMWh += dirKW*DT;   // ×0.25 h → kWh
-    totalIndMWh += indKW*DT;
-    totalRth    += q_s*DT;     // ×0.25 h → RT-h
-    if(h===peakH){ peakDirMW=dirKW; peakIndMW=indKW; }
-  }
-  return{peakDirMW, peakIndMW, totalDirMWh, totalIndMWh, totalRth};
-}
-
-// ── CATMULL-ROM SPLINE ────────────────────────────────────────────────────────
-function spline(ctx,pts,t=0.4){
-  if(pts.length<2) return;
-  ctx.moveTo(pts[0].x,pts[0].y);
-  for(let i=0;i<pts.length-1;i++){
-    const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
-    ctx.bezierCurveTo(p1.x+(p2.x-p0.x)*t,p1.y+(p2.y-p0.y)*t,
-      p2.x-(p3.x-p1.x)*t,p2.y-(p3.y-p1.y)*t,p2.x,p2.y);
-  }
-}
-function splineSeg(ctx,pts,a,b,t=0.4){
-  ctx.moveTo(pts[a].x,pts[a].y);
-  for(let i=a;i<b;i++){
-    const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
-    ctx.bezierCurveTo(p1.x+(p2.x-p0.x)*t,p1.y+(p2.y-p0.y)*t,
-      p2.x-(p3.x-p1.x)*t,p2.y-(p3.y-p1.y)*t,p2.x,p2.y);
+    var c2=IT_BASE+IT_UNLOCK,fc=Math.max(0.3,c2*(pue-1)-ANC),r2=C2H*c2/3.517*1000,kb=1000*fc/r2;
+    var soc=getSoC(h),chg=isChg(h),dis=isDis(h)&&soc>0;
+    var ibf=0,ibm=0,cm=0;
+    if(dis){var pn=clamp((pue-MINP)/(MAXP-MINP),0,1);ibf=IB_FRAC*Math.max(0.3,pn)*clamp(soc/0.05,0,1)*disTaper(h)*disEaseIn(h);ibm=fc*ibf}
+    var effBonus=dis?Math.min(ibm,ibm*ibf*0.8):0;
+    var cc=fc-ibm,lf=cc/Math.max(0.01,fc),ki=kb*(0.65+0.35*lf),cmw=cc*(ki/kb);
+    if(chg){var headroom=Math.max(0,GL-(c2+ANC+cmw));cm=Math.min(CHG_MW,headroom)*chgTaper(h)*chgEaseIn(h)}
+    var t2=c2+ANC+cmw+cm,ep=t2/c2;
+    dS.push({h:h,temp:temp,pue:pue,pueEff:ep,comp:IT_BASE,unlock:IT_UNLOCK,compTotal:c2,anc:ANC,cool:cmw,ibCool:ibm,effBonus:effBonus,charge:cm,total:t2,kwrt:kb,kwrtImp:ki,soc:soc,charging:chg,discharging:dis,fullCool:fc});
+    dT.push({h:h,temp:temp});
   }
 }
 
-// ── MAIN CHART ────────────────────────────────────────────────────────────────
-function drawMain(){
-  const cv=document.getElementById('mainCanvas');
-  const dpr=window.devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr; cv.height=cv.offsetHeight*dpr;
-  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  const W=cv.offsetWidth,H=cv.offsetHeight;
-  const L=76,R=68,T=14,B=28;
-  const CW=W-L-R,CH=H-T-B;
+// Initial build with defaults so canvas renders before config is submitted
+deriveConstants(7, 1.60);
+rebuild();
 
-  const kwMax=Math.ceil(PEAK/200)*200+200;
-  const xp=h=>L+(h/(N-1))*CW;
-  const yp=kw=>T+CH-(kw/kwMax)*CH;
-  const yr=kr=>T+CH-(kr/1.6)*CH;
+// State
+var mode='problem',progress=0,playing=false,speed=8,af=null,lt=0,paused=false;
+var nextPause=0;
+var pausePts={problem:[0.25,0.605],solution:[0.46,0.615]};
+var started=false;
 
-  const bp=BASE.map((v,h)=>({x:xp(h),y:yp(v)}));
-  const rp=KR.map((v,h)=>({x:xp(h),y:yr(v)}));
-  const drA=(drStart-6)*4, drB=(drEnd-6)*4;
-  const yFlat=yp(animTgt);
+// Canvas
+var pC=document.getElementById('powerChart');
+var pX=pC.getContext('2d');
 
-  // Per-hour discharge amounts (computed once per frame)
-  const QS=BASE.map((v,h)=>(h>=drA&&h<drB&&v>animTgt)?findQs(h,animTgt):0);
-  const noEffY=QS.map((q,h)=>yp(noEffKw(h,q)));
-  const dis=BASE.map((v,h)=>h>=drA&&h<drB&&v>animTgt);
+function resize(){
+  var pw=pC.parentElement.clientWidth-24,ph=pC.parentElement.clientHeight-100;
+  if(pw<100)pw=400;if(ph<50)ph=200;
+  pC.width=pw*2;pC.height=ph*2;pC.style.width=pw+'px';pC.style.height=ph+'px';
+}
+resize();
+window.addEventListener('resize',function(){resize();draw()});
 
-  ctx.clearRect(0,0,W,H);
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+function sg(arr,i){if(!arr||i<0||i>=arr.length)return null;return arr[i]}
 
-  // ── GRID ─────────────────────────────────────────────────────────────────
-  const steps=[100,200,250,500,1000,2000];
-  const tick=steps.find(s=>kwMax/s<=8)||2000;
-  ctx.strokeStyle='rgba(33,38,45,.9)';ctx.lineWidth=1;
-  ctx.font='10px SF Mono,Consolas,monospace'; ctx.textAlign='right';
-  for(let kw=0;kw<=kwMax;kw+=tick){
-    const y=yp(kw);
-    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+CW,y);ctx.stroke();
-    ctx.fillStyle='#d2a8ff'; ctx.fillText((kw/1000).toFixed(2)+' MW',L-6,y+3.5);
-  }
-  ctx.textAlign='left';
-  [0,.2,.4,.6,.8,1.0,1.2,1.4,1.6].forEach(v=>{
-    const y=yr(v);
-    ctx.fillStyle='#ffffff'; ctx.fillText(v.toFixed(1)+' kW/TR',L+CW+8,y+3.5);
-  });
-  ctx.textAlign='center';
-  for(let h=0;h<N;h++){
-    const x=xp(h);
-    if(h%4===0){
-      // Hourly: full grid line + label
-      ctx.strokeStyle='rgba(33,38,45,.9)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+CH);ctx.stroke();
-      if(HL[h]) ctx.fillStyle='#484f58',ctx.fillText(HL[h],x,T+CH+17);
-    } else {
-      // Quarter-hourly: faint tick mark only at bottom
-      ctx.strokeStyle='rgba(33,38,45,.45)';ctx.lineWidth=0.5;
-      ctx.beginPath();ctx.moveTo(x,T+CH-4);ctx.lineTo(x,T+CH);ctx.stroke();
-    }
-  }
-  ctx.strokeStyle='#21262d';ctx.lineWidth=1;ctx.strokeRect(L,T,CW,CH);
+function draw(){
+  var data=mode==='problem'?dP:dS;
+  if(!data||!data.length)return;
+  var W=pC.width,H=pC.height,pL=84,pR=104,pT=24,pB=46;
+  var cw=W-pL-pR,ch=H-pT-pB,minY=0,mx=GL*1.30;
+  var tempMinF=60,tempMaxF=110;
 
-  // Axis titles
-  ctx.save();ctx.fillStyle='#d2a8ff';ctx.font='10px SF Mono,Consolas,monospace';
-  ctx.translate(L-58,T+CH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('MW',0,0);ctx.restore();
-  ctx.save();ctx.fillStyle='#ffffff';ctx.font='10px SF Mono,Consolas,monospace';
-  ctx.translate(L+CW+58,T+CH/2);ctx.rotate(Math.PI/2);ctx.textAlign='center';ctx.fillText('kW/TR',0,0);ctx.restore();
+  pX.clearRect(0,0,W,H);
 
-  ctx.save(); ctx.beginPath(); ctx.rect(L,T,CW,CH); ctx.clip();
+  var toX=function(idx){var d=sg(data,idx);return d?pL+(d.h/24)*cw:pL};
+  var toY=function(mw){if(mw<minY)mw=minY;return pT+ch-((mw-minY)/(mx-minY)*ch)};
+  var toTempY=function(c){var f=c*1.8+32;f=Math.max(tempMinF,Math.min(tempMaxF,f));return pT+ch-((f-tempMinF)/(tempMaxF-tempMinF)*ch)};
 
-  // ── DR WINDOW BACKGROUND ─────────────────────────────────────────────────
-  const xDrA=xp(drA),xDrB=xp(drB);
-  ctx.fillStyle='rgba(96,165,250,0.04)';
-  ctx.fillRect(xDrA,T,xDrB-xDrA,CH);
-  // DR window border lines
-  ctx.strokeStyle='rgba(96,165,250,0.25)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
-  ctx.beginPath();ctx.moveTo(xDrA,T);ctx.lineTo(xDrA,T+CH);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(xDrB,T);ctx.lineTo(xDrB,T+CH);ctx.stroke();
-  ctx.setLineDash([]);
+  // Grid (more visible)
+  pX.strokeStyle='rgba(255,255,255,0.06)';pX.lineWidth=1;
+  for(var mw=Math.ceil(minY);mw<=Math.ceil(mx);mw+=2){pX.beginPath();pX.moveTo(pL,toY(mw));pX.lineTo(pL+cw,toY(mw));pX.stroke()}
+  // Bolder gridline every 5 MW
+  pX.strokeStyle='rgba(255,255,255,0.12)';pX.lineWidth=1;
+  for(var mw=Math.ceil(minY);mw<=Math.ceil(mx);mw+=5){pX.beginPath();pX.moveTo(pL,toY(mw));pX.lineTo(pL+cw,toY(mw));pX.stroke()}
 
-  // ── MW BASELINE (purple) ─────────────────────────────────────────────────
-  if(ON.kw){
-    const g=ctx.createLinearGradient(0,T,0,T+CH);
-    g.addColorStop(0,'rgba(210,168,255,.20)');g.addColorStop(1,'rgba(210,168,255,.02)');
-    ctx.beginPath();spline(ctx,bp);
-    ctx.lineTo(bp[N-1].x,T+CH);ctx.lineTo(bp[0].x,T+CH);ctx.closePath();
-    ctx.fillStyle=g;ctx.fill();
-    ctx.beginPath();spline(ctx,bp);
-    ctx.strokeStyle='#d2a8ff';ctx.lineWidth=2.5;ctx.stroke();
-    // Dots only at hourly positions (every 4th point)
-    bp.filter((_,i)=>i%4===0).forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fillStyle='#d2a8ff';ctx.fill();ctx.strokeStyle='#0d1117';ctx.lineWidth=1.8;ctx.stroke();});
-  }
+  // Y labels (left, MW)
+  pX.fillStyle='rgba(255,255,255,0.85)';pX.font='bold 26px '+MONO;pX.textAlign='right';pX.textBaseline='middle';
+  for(var mw=Math.ceil(minY);mw<=Math.ceil(mx);mw+=5)pX.fillText(mw,pL-12,toY(mw));
+  // Y axis title
+  pX.save();pX.translate(24,pT+ch/2);pX.rotate(-Math.PI/2);pX.textAlign='center';pX.fillStyle='rgba(255,255,255,0.7)';pX.font='bold 22px '+SANS;pX.fillText('Power (MW)',0,0);pX.restore();
 
-  // ── SAVINGS ZONES ─────────────────────────────────────────────────────────
-  const shaving = ON.icebrick && S>0 && animTgt<PEAK-1;
-  // xRight per segment: extend to window boundary if segment reaches DR end
+  // Y labels (right, °F)
+  pX.fillStyle='rgba(251,191,36,0.95)';pX.font='bold 26px '+MONO;pX.textAlign='left';pX.textBaseline='middle';
+  for(var f=70;f<=100;f+=10){var fy=pT+ch-((f-tempMinF)/(tempMaxF-tempMinF)*ch);pX.fillText(f+'°F',pL+cw+12,fy)}
+  // Right Y axis title
+  pX.save();pX.translate(W-24,pT+ch/2);pX.rotate(Math.PI/2);pX.textAlign='center';pX.fillStyle='rgba(251,191,36,0.85)';pX.font='bold 22px '+SANS;pX.fillText('Outside Temperature',0,0);pX.restore();
 
-  let h=0;
-  while(h<N){
-    if(!dis[h]){h++;continue;}
-    const a=h; while(h<N&&dis[h]) h++; const b=h-1;
-    // If this segment reaches the DR window end, extend visually to the boundary
-    const xRight = (b===drB-1) ? xDrB : bp[b].x;
+  // X labels
+  pX.textAlign='center';pX.textBaseline='top';pX.font='bold 26px '+MONO;pX.fillStyle='rgba(255,255,255,0.85)';
+  for(var hr=0;hr<=24;hr+=3)pX.fillText(String(hr).padStart(2,'0')+':00',pL+(hr/24)*cw,pT+ch+14);
 
-    // INDIRECT BONUS zone (cyan): between noEffY line and cut-line (yFlat)
-    if(shaving && ON.indirect){
-      const ig=ctx.createLinearGradient(0,yFlat,0,Math.min(...Array.from({length:b-a+1},(_,i)=>noEffY[a+i])));
-      ig.addColorStop(0,'rgba(56,189,248,0.12)');
-      ig.addColorStop(1,'rgba(56,189,248,0.42)');
-      ctx.beginPath();
-      ctx.moveTo(bp[a].x,yFlat);
-      for(let i=a;i<=b;i++) ctx.lineTo(bp[i].x,noEffY[i]);
-      ctx.lineTo(xRight,noEffY[b]);   // extend top to window boundary
-      ctx.lineTo(xRight,yFlat);       // drop to cut-line at boundary
-      ctx.closePath();
-      ctx.fillStyle=ig;ctx.fill();
-    }
+  // Power limit
+  var limY=toY(GL);
+  pX.strokeStyle='rgba(239,68,68,0.8)';pX.lineWidth=4;pX.setLineDash([12,7]);
+  pX.beginPath();pX.moveTo(pL,limY);pX.lineTo(pL+cw,limY);pX.stroke();pX.setLineDash([]);
+  pX.fillStyle='rgba(239,68,68,1)';pX.font='bold 24px '+MONO;pX.textAlign='left';pX.textBaseline='alphabetic';
+  pX.fillText(GL.toFixed(0)+' MW Operational Limit',pL+10,limY-12);
 
-    // DIRECT savings zone (amber): between baseline spline and noEffY line
-    if(shaving && ON.icebrick){
-      const ag=ctx.createLinearGradient(0,Math.min(...bp.slice(a,b+1).map(p=>p.y)),0,noEffY[a]);
-      ag.addColorStop(0,'rgba(255,255,255,0.55)');
-      ag.addColorStop(1,'rgba(255,255,255,0.18)');
-      ctx.beginPath();
-      ctx.moveTo(bp[a].x,noEffY[a]);
-      ctx.lineTo(bp[a].x,bp[a].y);
-      splineSeg(ctx,bp,a,b);              // top follows baseline spline to b
-      ctx.lineTo(xRight,bp[b].y);         // extend top flat to window boundary
-      ctx.lineTo(xRight,noEffY[b]);       // drop to noEff at boundary
-      ctx.lineTo(bp[b].x,noEffY[b]);      // back to b on noEff curve
-      for(let i=b-1;i>=a;i--) ctx.lineTo(bp[i].x,noEffY[i]);
-      ctx.closePath();
-      ctx.fillStyle=ag;ctx.fill();
-    }
+  var mi=Math.floor(progress*N);mi=clamp(mi,1,N);
 
-    // No-efficiency reference line (faint dashed white)
-    if(shaving && ON.indirect && ON.icebrick){
-      ctx.beginPath();
-      ctx.moveTo(bp[a].x,noEffY[a]);
-      for(let i=a+1;i<=b;i++) ctx.lineTo(bp[i].x,noEffY[i]);
-      ctx.lineTo(xRight,noEffY[b]);       // extend to window boundary
-      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();
-      ctx.setLineDash([]);
-    }
+  var layers=mode==='problem'?[
+    {k:'comp',c:'rgba(14,32,62,0.95)',n:'IT Load',lc:'#7898C8',hatch:false},
+    {k:'anc',c:'rgba(170,62,46,0.88)',n:'Ancillary',lc:'#E48A6A',hatch:false},
+    {k:'cool',c:'rgba(48,82,150,0.88)',n:'Cooling Load',lc:'#88B0E0',hatch:false}
+  ]:[
+    {k:'comp',c:'rgba(14,32,62,0.95)',n:'IT Load',lc:'#7898C8',hatch:false},
+    {k:'unlock',c:'rgba(255,255,255,0.90)',n:'Added IT Capacity (CTES)',lc:'#000000',hatch:false},
+    {k:'anc',c:'rgba(170,62,46,0.88)',n:'Ancillary',lc:'#E48A6A',hatch:false},
+    {k:'cool',c:'rgba(48,82,150,0.88)',n:'Chiller plant (electrical)',lc:'#88B0E0',hatch:false},
+    {k:'ibCool',c:'rgba(255,255,255,0.35)',n:'CTES Discharge (avoided cooling)',lc:'#5AAADE',hatch:true,effBonusLegend:true},
+    {k:'charge',c:'rgba(85,138,200,0.82)',n:'CTES Charging',lc:'#A8C8E8',hatch:false}
+  ];
 
-    // CUT-LINE (dashed amber at actual shaved demand)
-    if(shaving){
-      ctx.beginPath();ctx.moveTo(bp[a].x,yFlat);ctx.lineTo(xRight,yFlat);
-      ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.stroke();
-      ctx.setLineDash([]);
-    }
-  }
+  // Areas
+  for(var li=0;li<layers.length;li++){
+    pX.beginPath();
+    for(var j=0;j<mi;j++){var dd=sg(data,j);if(!dd)continue;var cum=0;for(var k=0;k<=li;k++)cum+=(dd[layers[k].k]||0);var px=toX(j),py=toY(cum);if(j===0)pX.moveTo(px,py);else pX.lineTo(px,py)}
+    for(var j=mi-1;j>=0;j--){var dd=sg(data,j);if(!dd)continue;var cum=0;for(var k=0;k<li;k++)cum+=(dd[layers[k].k]||0);pX.lineTo(toX(j),toY(cum))}
+    pX.closePath();
 
-  // ── kW/TR LINE ────────────────────────────────────────────────────────────
-  if(ON.kwtr){
-    ctx.beginPath();spline(ctx,rp);
-    ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();
-    rp.filter((_,i)=>i%4===0).forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();ctx.strokeStyle='#0d1117';ctx.lineWidth=1.8;ctx.stroke();});
-  }
-
-  ctx.restore();
-
-  // ── BRACKET ANNOTATION ────────────────────────────────────────────────────
-  if(shaving){
-    const pkI=BASE.indexOf(PEAK);
-    const xBr=xp(pkI)+26;
-    const yTop=yp(PEAK),yBot=yFlat;
-    if(yBot-yTop>14){
-      const mid=(yTop+yBot)/2;
-      const red=PEAK-animTgt;
-      // Breakdown at peak hour
-      const q_pk=findQs(pkI,animTgt);
-      const nek=noEffKw(pkI,q_pk);
-      const yMid=yp(nek); // noEff line at peak hour
-
-      ctx.save();
-      // Bracket line
-      ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.5;ctx.setLineDash([]);
-      ctx.beginPath();ctx.moveTo(xBr,yTop+4);ctx.lineTo(xBr,yBot-4);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(xBr-5,yTop);ctx.lineTo(xBr+5,yTop);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(xBr-5,yBot);ctx.lineTo(xBr+5,yBot);ctx.stroke();
-      // Arrows
-      ctx.fillStyle='rgba(255,255,255,.85)';
-      ctx.beginPath();ctx.moveTo(xBr,yTop);ctx.lineTo(xBr-4,yTop+9);ctx.lineTo(xBr+4,yTop+9);ctx.closePath();ctx.fill();
-      ctx.beginPath();ctx.moveTo(xBr,yBot);ctx.lineTo(xBr-4,yBot-9);ctx.lineTo(xBr+4,yBot-9);ctx.closePath();ctx.fill();
-      // Separator line at noEff level (showing the split)
-      if(ON.indirect && yMid>yTop+4 && yMid<yBot-4){
-        ctx.strokeStyle='rgba(56,189,248,.6)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-        ctx.beginPath();ctx.moveTo(xBr-5,yMid);ctx.lineTo(xBr+5,yMid);ctx.stroke();
-        ctx.setLineDash([]);
+    if(layers[li].hatch){
+      // CTES discharge: blue diagonal stripe pattern showing avoided cooling
+      pX.save();
+      pX.clip();
+      // Soft blue wash background
+      pX.fillStyle='rgba(40,80,158,0.25)';pX.fill();
+      // Diagonal stripes — steel blue
+      pX.strokeStyle='rgba(68,118,200,0.55)';pX.lineWidth=2;
+      for(var sx2=-H;sx2<W+H;sx2+=10){
+        pX.beginPath();pX.moveTo(sx2,H);pX.lineTo(sx2+H,0);pX.stroke();
       }
-      // Labels
-      const l1='−'+fmt(red);
-      const l2='↑ '+fmt(q_pk*KR[pkI])+' direct';
-      const l3='↑ '+fmt(nek-animTgt)+' indirect';
-      ctx.font='bold 11px SF Mono,Consolas,monospace';
-      const tw=Math.max(ctx.measureText(l1).width,ctx.measureText(l2).width,ctx.measureText(l3).width);
-      ctx.fillStyle='rgba(13,17,23,.92)';ctx.fillRect(xBr+8,mid-38,tw+16,60);
-      ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.font='bold 12px SF Mono,Consolas,monospace';
-      ctx.fillText(l1,xBr+15,mid-18);
-      ctx.font='9px SF Mono,Consolas,monospace';ctx.fillStyle='rgba(255,255,255,.75)';
-      ctx.fillText(l2,xBr+15,mid-2);
-      ctx.fillStyle='rgba(56,189,248,.75)';
-      ctx.fillText(l3,xBr+15,mid+13);
-      ctx.restore();
+      // Steel-blue border along the top edge
+      pX.beginPath();
+      for(var j=0;j<mi;j++){var dd=sg(data,j);if(!dd)continue;var cum=0;for(var k=0;k<=li;k++)cum+=(dd[layers[k].k]||0);var px=toX(j),py=toY(cum);if(j===0)pX.moveTo(px,py);else pX.lineTo(px,py)}
+      pX.strokeStyle='rgba(90,170,222,0.88)';pX.lineWidth=2;pX.setLineDash([6,4]);pX.stroke();pX.setLineDash([]);
+      pX.restore();
+
+      // ── Efficiency Bonus sub-strip (lighter teal) inside ibCool band ──
+      // Formula: 0.8% kW/ton improvement per 1% load reduction
+      if(mode==='solution'){
+        pX.beginPath();
+        for(var j=0;j<mi;j++){
+          var dd=sg(data,j);if(!dd)continue;
+          var cumBelow=0;for(var k=0;k<li;k++)cumBelow+=(dd[layers[k].k]||0);
+          var ebv=dd.effBonus||0;
+          var px=toX(j),py=toY(cumBelow+ebv);
+          if(j===0)pX.moveTo(px,py);else pX.lineTo(px,py);
+        }
+        for(var j=mi-1;j>=0;j--){
+          var dd=sg(data,j);if(!dd)continue;
+          var cumBelow=0;for(var k=0;k<li;k++)cumBelow+=(dd[layers[k].k]||0);
+          pX.lineTo(toX(j),toY(cumBelow));
+        }
+        pX.closePath();
+        pX.save();
+        pX.clip();
+        // Golden amber fill — indirect / efficiency gain
+        pX.fillStyle='rgba(210,148,18,0.65)';pX.fill();
+        // Top edge bright gold line
+        pX.beginPath();
+        for(var j=0;j<mi;j++){
+          var dd=sg(data,j);if(!dd)continue;
+          var cumBelow=0;for(var k=0;k<li;k++)cumBelow+=(dd[layers[k].k]||0);
+          var ebv=dd.effBonus||0;
+          if(ebv>0){var px=toX(j),py=toY(cumBelow+ebv);if(j===0||!(sg(data,j-1)||{}).effBonus)pX.moveTo(px,py);else pX.lineTo(px,py);}
+        }
+        pX.strokeStyle='rgba(240,172,28,0.95)';pX.lineWidth=2;pX.setLineDash([]);pX.stroke();
+        pX.restore();
+        // ── Fixed labels: use peak discharge index from full dataset (never moves) ──
+        // Find the index with max ibCool across the full dS array
+        var peakIbIdx=0,peakIbVal=0;
+        for(var pi=0;pi<dS.length;pi++){if((dS[pi].ibCool||0)>peakIbVal){peakIbVal=dS[pi].ibCool||0;peakIbIdx=pi;}}
+        // Find horizontal midpoint of the discharge window (where ibCool > 0)
+        var disStart=-1,disEnd=-1;
+        for(var pi2=0;pi2<dS.length;pi2++){if((dS[pi2].ibCool||0)>0.05){if(disStart<0)disStart=pi2;disEnd=pi2;}}
+        var fixedX=(disStart>=0&&disEnd>disStart)?toX(Math.floor((disStart+disEnd)/2)):pL+cw/2;
+
+        // "Indirect reduction — Efficiency gain" label in teal strip
+        var ebdFull=dS[peakIbIdx];
+        if(ebdFull&&(ebdFull.effBonus||0)>0.05){
+          var cumBelow=0;for(var k=0;k<li;k++)cumBelow+=(ebdFull[layers[k].k]||0);
+          var ebH=(ebdFull.effBonus/(mx-minY))*ch;
+          if(ebH>14){
+            pX.font='bold 24px '+SANS;
+            pX.fillStyle='rgba(255,255,255,0.97)';
+            pX.textAlign='center';pX.textBaseline='middle';
+            pX.fillText('Indirect reduction — Efficiency gain',fixedX,toY(cumBelow+ebdFull.effBonus/2));
+          }
+        }
+
+        // "Direct Avoided Cooling" label in upper hatched part
+        var dacdFull=dS[peakIbIdx];
+        if(dacdFull&&(dacdFull.ibCool||0)>0.05){
+          var cumBelow=0;for(var k=0;k<li;k++)cumBelow+=(dacdFull[layers[k].k]||0);
+          var ebv=dacdFull.effBonus||0,ibv=dacdFull.ibCool||0;
+          var upperMid=cumBelow+ebv+(ibv-ebv)/2;
+          var upperH=((ibv-ebv)/(mx-minY))*ch;
+          if(upperH>14){
+            pX.font='bold 24px '+SANS;
+            pX.fillStyle='rgba(255,255,255,0.97)';
+            pX.textAlign='center';pX.textBaseline='middle';
+            pX.fillText('Direct Avoided Cooling',fixedX,toY(upperMid));
+          }
+        }
+      }
+    }else{
+      pX.fillStyle=layers[li].c;pX.fill();
+    }
+  }
+
+  // Draw layer name labels inside each area (at 25% across the filled region)
+  var shortNames=mode==='problem'?['IT','Ancillary','Cooling']:['IT','Added IT','Ancillary','Chiller plant','','Charging'];
+  var labelIdx=Math.floor(N*0.25);
+  if(mi>labelIdx){
+    var ld=sg(data,labelIdx);
+    if(ld){
+      var lxPos=toX(labelIdx);
+      var cumB=0;
+      pX.textAlign='left';pX.textBaseline='middle';
+      for(var li=0;li<layers.length;li++){
+        var v=ld[layers[li].k]||0;
+        var areaH=(v/(mx-minY))*ch;
+        var midYL=toY(cumB+v/2);
+        // For bottom IT layer, label sits at vertical midpoint of the full band
+        if(li===0&&cumB===0){midYL=toY((minY+v)/2)}
+        cumB+=v;
+        if(areaH>32&&v>0.1){
+          pX.font='bold 30px '+SANS;
+          if(layers[li].hatch){
+            pX.fillStyle='rgba(255,255,255,0.95)';
+          }else if(layers[li].k==='unlock'){
+            pX.fillStyle='rgba(0,0,0,0.92)';
+          }else{
+            pX.fillStyle='rgba(255,255,255,0.92)';
+          }
+          pX.fillText(shortNames[li]||layers[li].n,lxPos+10,midYL);
+        }
+      }
+    }
+  }
+
+  // Sweep + labels
+  var di=clamp(mi-1,0,N-1),dd=sg(data,di);
+  if(dd){
+    var sx=toX(di);
+    pX.strokeStyle='rgba(255,255,255,0.7)';pX.lineWidth=3;pX.beginPath();pX.moveTo(sx,pT);pX.lineTo(sx,pT+ch);pX.stroke();
+    var cb=0;
+    for(var li=0;li<layers.length;li++){
+      var v=dd[layers[li].k]||0;if(v<0.05){cb+=v;continue}
+      var my=toY(cb+v/2),lh=(v/(mx-minY))*ch;
+      // For bottom IT layer, label sits in the full visible band
+      if(li===0&&cb===0){my=toY((minY+cb+v)/2);lh=((cb+v-minY)/(mx-minY))*ch}
+      cb+=v;
+      if(lh>30){
+        if(layers[li].hatch){
+          // CTES: steel-blue dashed pill showing "avoided"
+          var txt='−'+v.toFixed(1)+' MW avoided';
+          pX.font='bold 24px '+MONO;var tw=pX.measureText(txt).width;
+          var lx=sx+14;if(sx>W-pR-tw-50)lx=sx-tw-36;
+          rr(pX,lx-6,my-18,tw+18,36,7);pX.fillStyle='rgba(10,15,28,0.92)';pX.fill();
+          pX.strokeStyle='rgba(90,170,222,0.85)';pX.lineWidth=2;pX.setLineDash([5,4]);pX.stroke();pX.setLineDash([]);
+          pX.fillStyle='#5AAADE';pX.textAlign='left';pX.textBaseline='middle';pX.fillText(txt,lx,my);
+        }else{
+          var txt=v.toFixed(1)+' MW';
+          pX.font='bold 26px '+MONO;var tw=pX.measureText(txt).width;
+          var lx=sx+14;if(sx>W-pR-tw-40)lx=sx-tw-28;
+          rr(pX,lx-6,my-18,tw+18,36,7);pX.fillStyle='rgba(0,0,0,0.78)';pX.fill();
+          pX.fillStyle='#fff';pX.textAlign='left';pX.textBaseline='middle';pX.fillText(txt,lx,my);
+        }
+      }
+    }
+    var topY=toY(cb);
+    pX.fillStyle='#fff';pX.beginPath();pX.arc(sx,topY,8,0,Math.PI*2);pX.fill();
+    pX.strokeStyle='rgba(10,15,28,0.7)';pX.lineWidth=2;pX.stroke();
+    pX.font='bold 28px '+MONO;var tt=cb.toFixed(1)+' MW';var ttw=pX.measureText(tt).width;
+    var tx=sx-ttw/2-6,ty=topY-36;if(ty<pT)ty=topY+14;
+    rr(pX,tx,ty-14,ttw+18,36,7);pX.fillStyle=cb>GL-0.5?'rgba(239,68,68,0.9)':'rgba(0,0,0,0.78)';pX.fill();
+    pX.fillStyle=cb>GL-0.5?'#FCA5A5':'#fff';pX.textAlign='left';pX.textBaseline='middle';pX.fillText(tt,tx+9,ty+4);
+  }
+
+  // Temperature line (yellow, no fill) — uses right Y-axis (°F)
+  pX.save();
+  pX.beginPath();pX.rect(pL,pT,cw,ch);pX.clip();
+  pX.strokeStyle='rgba(251,191,36,0.95)';pX.lineWidth=6;pX.lineJoin='round';pX.lineCap='round';
+  pX.shadowColor='rgba(251,191,36,0.55)';pX.shadowBlur=12;
+  pX.beginPath();
+  for(var j=0;j<mi;j++){var dd2=sg(data,j);if(!dd2)continue;var tx2=toX(j),ty2=toTempY(dd2.temp);if(j===0)pX.moveTo(tx2,ty2);else pX.lineTo(tx2,ty2)}
+  pX.stroke();
+  pX.shadowBlur=0;
+  // Temp marker at sweep
+  if(dd){var tcx=toX(di),tcy=toTempY(dd.temp);
+    pX.fillStyle='#FBBF24';pX.beginPath();pX.arc(tcx,tcy,10,0,Math.PI*2);pX.fill();
+    pX.strokeStyle='rgba(10,15,28,0.9)';pX.lineWidth=3;pX.stroke();
+    var tlbl=Math.round(dd.temp*1.8+32)+'°F';
+    pX.font='bold 26px '+MONO;var tlw=pX.measureText(tlbl).width;
+    var tlx=tcx+16;if(tcx>pL+cw-tlw-40)tlx=tcx-tlw-30;
+    rr(pX,tlx-6,tcy-18,tlw+16,36,7);pX.fillStyle='rgba(10,15,28,0.92)';pX.fill();
+    pX.strokeStyle='rgba(251,191,36,0.85)';pX.lineWidth=2;pX.stroke();
+    pX.fillStyle='#FBBF24';pX.textAlign='left';pX.textBaseline='middle';pX.fillText(tlbl,tlx,tcy);
+  }
+  pX.restore();
+
+  // Legend
+  var lg=document.getElementById('chartLegend'),lh='';
+  for(var li=0;li<layers.length;li++){
+    if(layers[li].hatch){
+      lh+='<span><span class="dot-stripe"></span>'+layers[li].n+'</span>';
+      if(mode==='solution')lh+='<span><span class="dot" style="background:rgba(210,148,18,0.65);border:2px solid rgba(240,172,28,0.9)"></span>Efficiency Bonus</span>';
+    }else{
+      lh+='<span style="color:'+layers[li].lc+'"><span class="dot" style="background:'+layers[li].c+'"></span>'+layers[li].n+'</span>';
+    }
+  }
+  lg.innerHTML=lh;
+}
+
+// Update left panel + stats
+function updateUI(){
+  var data=mode==='problem'?dP:dS;
+  var idx=clamp(Math.floor(progress*N),0,N-1),d=sg(data,idx);if(!d)return;
+
+  // Stats
+  var hh=Math.floor(d.h),mm=Math.floor((d.h%1)*60);
+  document.getElementById('stTime').textContent=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  var tF=Math.round(d.temp*1.8+32);
+  document.getElementById('stTemp').textContent=tF+'°F';
+  var tv=document.getElementById('stTemp');
+  // Color thresholds: <72°F steel blue, <86°F gold, <100°F terracotta, >=100°F red
+  var tColor=tF<72?'#5AAADE':tF<86?'#F5C028':tF<100?'#C05040':'#E53935';
+  tv.style.color=tColor;
+
+  var pv=mode==='solution'?(d.pueEff||d.pue):d.pue;
+  document.getElementById('stPUE').textContent=pv.toFixed(2);
+  // PUE color tracks temperature (same color) to visually link them
+  document.getElementById('stPUE').style.color=tColor;
+  document.getElementById('stPUES').textContent=tF<72?'cool — efficient':tF<86?'mild — climbing':tF<100?'hot — degrading':'peak heat';
+
+  // Left insight panel
+  var ins=document.getElementById('insight');
+  var inT=document.getElementById('inTime'),inH=document.getElementById('inHead'),inB=document.getElementById('inBody');
+  inT.textContent=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  ins.className='insight';
+
+  if(mode==='problem'){
+    var curtail=C_NO-d.comp;
+    inT.style.color=d.h<6||d.h>=21?'#4A7AC8':d.h<10?'#F5C028':d.h<17?'#E53935':'#5AAADE';
+    if(d.h<5){
+      inH.textContent='Midnight — Steady State';
+      inB.innerHTML='Compute at <span class="mm">'+d.comp.toFixed(1)+' MW</span>. Cooling only needs <span class="mm">'+d.cool.toFixed(1)+' MW</span>. PUE is good at <strong>'+d.pue.toFixed(2)+'</strong>.<div class="metric-row"><div class="metric" style="border-color:#FBBF24"><div class="m-label">Wasted Grid</div><div class="m-val" style="color:#FBBF24">'+Math.max(0,GL-d.total).toFixed(1)+' MW</div></div><div class="metric" style="border-color:#94A3B8"><div class="m-label">Compute</div><div class="m-val" style="color:#94A3B8">'+d.comp.toFixed(1)+' MW</div></div></div>Power you pay for but cannot sell as compute — because this scenario reserves it for the design day peak.';
+    }else if(d.h<8){
+      inH.textContent='Sunrise — Temperature Rising';
+      inB.innerHTML='<span class="mm">'+Math.round(d.temp*1.8+32)+'°F</span> outside. Chiller plant efficiency declining — kW/RT climbing to <span class="mm r">'+d.kwrt.toFixed(2)+'</span>.<div class="metric-row"><div class="metric" style="border-color:#F97316"><div class="m-label">kW/RT</div><div class="m-val" style="color:#F97316">'+d.kwrt.toFixed(2)+'</div></div><div class="metric" style="border-color:#E53935"><div class="m-label">Cooling</div><div class="m-val" style="color:#FCA5A5">'+d.cool.toFixed(1)+' MW</div></div></div>Each additional degree forces the chiller plant to work harder. The cooling layer on the chart is growing.';
+    }else if(d.h<13){
+      ins.className='insight glow-r';inH.textContent='Heat Building — Approaching Limit';
+      inB.innerHTML='PUE at <span class="r mm">'+d.pue.toFixed(2)+'</span>. Cooling consuming <span class="mm">'+d.cool.toFixed(1)+' MW</span>.'+(curtail>0.05?' <span class="r">Compute already being curtailed!</span>':'')+' <div class="metric-row"><div class="metric" style="border-color:#EF4444"><div class="m-label">kW/RT</div><div class="m-val" style="color:#EF4444">'+d.kwrt.toFixed(2)+'</div></div><div class="metric" style="border-color:#EF4444"><div class="m-label">Headroom</div><div class="m-val" style="color:#EF4444">'+Math.max(0,GL-d.total).toFixed(1)+' MW</div></div></div>At this kW/RT, every MW of compute needs <span class="mm">'+(d.pue-1).toFixed(2)+' MW</span> of overhead. The grid ceiling is approaching fast.';
+    }else if(d.h<17){
+      ins.className='insight glow-r';inH.innerHTML='<span style="color:#EF4444">PEAK — Grid Limit Hit</span>';
+      inB.innerHTML='<span class="mm">'+Math.round(d.temp*1.8+32)+'°F</span>. Chiller plant at worst efficiency.<div class="metric-row"><div class="metric" style="border-color:#EF4444"><div class="m-label">kW/RT</div><div class="m-val" style="color:#EF4444">'+d.kwrt.toFixed(2)+'</div></div><div class="metric" style="border-color:#E53935"><div class="m-label">Cooling</div><div class="m-val" style="color:#FCA5A5">'+d.cool.toFixed(1)+' MW</div></div><div class="metric" style="border-color:#94A3B8"><div class="m-label">Compute</div><div class="m-val" style="color:#94A3B8">'+d.comp.toFixed(1)+' MW</div></div><div class="metric" style="border-color:#FBBF24"><div class="m-label">Headroom</div><div class="m-val" style="color:#EF4444">'+Math.max(0,GL-d.total).toFixed(1)+' MW</div></div></div>Total power touches the <strong class="r">'+GL.toFixed(1)+' MW operational limit</strong>. This single afternoon dictates your max annual contract — you can <strong>never sell more than '+C_NO.toFixed(1)+' MW</strong> because this day exists.';
+    }else if(d.h<21){
+      inH.textContent='Evening — Cooling Down';
+      inB.innerHTML='Temperature dropping to <span class="mm">'+Math.round(d.temp*1.8+32)+'°F</span>. PUE easing to <span class="mm">'+d.pue.toFixed(2)+'</span>. But the damage is done — the design day capped your annual revenue at '+C_NO.toFixed(1)+' MW of compute.';
+    }else{
+      inH.textContent='Night — The Paradox';
+      inB.innerHTML='<span class="mm g">'+Math.max(0,GL-d.total).toFixed(1)+' MW</span> of grid sits idle. Abundant capacity at night, none at peak. <strong>Your entire business is constrained by one hot afternoon.</strong>';
+    }
+  }else{
+    inT.style.color=d.charging?'#4A7AC8':d.discharging?'#5AAADE':'#F5C028';
+    if(d.h<5||d.h>=22){
+      inH.innerHTML='<span style="color:#5AAADE">Charging Overnight</span>';
+      inB.innerHTML='CTES draws <span class="mm p">'+d.charge.toFixed(1)+' MW</span> from spare grid capacity to store thermal energy — staying just under the operational limit.<div class="metric-row"><div class="metric" style="border-color:#4A7AC8"><div class="m-label">State of Charge</div><div class="m-val" style="color:#5AAADE">'+Math.round(d.soc*100)+'%</div></div><div class="metric" style="border-color:#5AAADE"><div class="m-label">IT Total</div><div class="m-val" style="color:#5AAADE">'+(d.compTotal||d.comp).toFixed(1)+' MW</div></div></div>All <span class="t mm">'+C_IB.toFixed(1)+' MW</span> of IT runs uninterrupted — <strong>'+IT_UNLOCK.toFixed(1)+' MW unlocked</strong> compared to without CTES. Charging consumes only the spare grid capacity that remains under the '+GL.toFixed(1)+' MW limit.';
+    }else if(d.h<10){
+      inH.textContent='Fully Charged — Ready';
+      inB.innerHTML='State of Charge: <strong>'+Math.round(d.soc*100)+'%</strong>. Tank is loaded, waiting for discharge at 10:00. Running <span class="t mm">'+C_IB.toFixed(1)+' MW</span> — already generating extra revenue vs. the '+C_NO.toFixed(1)+' MW old limit.';
+    }else if(d.h<13){
+      ins.className='insight glow-t';inH.innerHTML='<span style="color:#5AAADE">Discharging — Double Win Active</span>';
+      inB.innerHTML='CTES covers <span class="t mm">'+(d.ibCool||0).toFixed(1)+' MW</span> of cooling thermally. No electricity needed for that portion.<div class="metric-row"><div class="metric" style="border-color:#E53935"><div class="m-label">Base kW/RT</div><div class="m-val" style="color:#E53935">'+d.kwrt.toFixed(2)+'</div></div><div class="metric" style="border-color:#5AAADE"><div class="m-label">Improved kW/RT</div><div class="m-val" style="color:#5AAADE">'+(d.kwrtImp||d.kwrt).toFixed(2)+'</div></div><div class="metric" style="border-color:#5AAADE"><div class="m-label">CTES Cooling</div><div class="m-val" style="color:#5AAADE">'+(d.ibCool||0).toFixed(1)+' MW</div></div><div class="metric" style="border-color:#E53935"><div class="m-label">Chiller Plant Only</div><div class="m-val" style="color:#E08888">'+d.cool.toFixed(1)+' MW</div></div></div><strong>Win 1:</strong> Direct cooling offset. <strong>Win 2:</strong> Remaining chiller plant runs at lower load → better efficiency. State of Charge: '+Math.round(d.soc*100)+'%.';
+    }else if(d.h<17){
+      ins.className='insight glow-t';inH.innerHTML='<span style="color:#5AAADE">PEAK — CTES Delivers</span>';
+      inB.innerHTML='Same <span class="mm">'+Math.round(d.temp*1.8+32)+'°F</span>. Without CTES: capped at '+C_NO.toFixed(1)+' MW. With CTES:<div class="metric-row"><div class="metric" style="border-color:#5AAADE"><div class="m-label">IT Total</div><div class="m-val" style="color:#5AAADE">'+(d.compTotal||d.comp).toFixed(1)+' MW ✓</div></div><div class="metric" style="border-color:#5AAADE"><div class="m-label">CTES Cooling</div><div class="m-val" style="color:#5AAADE">'+(d.ibCool||0).toFixed(1)+' MW free</div></div><div class="metric" style="border-color:#5AAADE"><div class="m-label">Eff. PUE</div><div class="m-val" style="color:#5AAADE">'+(d.pueEff||d.pue).toFixed(2)+'</div></div><div class="metric" style="border-color:#4A7AC8"><div class="m-label">State of Charge</div><div class="m-val" style="color:#4A7AC8">'+Math.round(d.soc*100)+'%</div></div></div>Contract <strong class="t">'+C_IB.toFixed(1)+' MW year-round</strong> — that is <strong class="g">+'+Math.round(IT_UNLOCK_PCT*100*10)/10+'% IT capacity</strong> from the same '+GL.toFixed(1)+' MW operational envelope.';
+    }else{
+      inH.textContent='Mission Accomplished';
+      inB.innerHTML='Full <span class="t mm">'+C_IB.toFixed(1)+' MW</span> ran all day. Zero curtailment, zero SLA risk. State of Charge: <span class="mm">'+Math.round(d.soc*100)+'%</span>. Tonight CTES recharges for tomorrow.';
+    }
+  }
+
+  // Callouts on chart (concise, right side)
+  hideCallouts();
+  if(paused){
+    if(mode==='problem'){
+      if(d.h>=5.5&&d.h<=7){
+        var c1=document.getElementById('cc1');c1.classList.add('show');c1.style.top='18%';
+        document.getElementById('cc1h').innerHTML='☀ Heat Climbing';
+        document.getElementById('cc1msg').textContent='Outside air heats up — the chiller plant must spend more electricity per unit of cooling.';
+        document.getElementById('cc1i').innerHTML=svgHeatRising();
+      }
+      if(d.h>=14&&d.h<=16){
+        var c2=document.getElementById('cc2');c2.classList.add('show');c2.style.top='10%';
+        c2.style.borderColor='#E53935';
+        document.getElementById('cc2h').innerHTML='🔥 Peak — At the Limit';
+        document.getElementById('cc2h').style.color='#E53935';
+        document.getElementById('cc2msg').textContent='Cooling pushes the stack to the '+GL.toFixed(1)+' MW operational limit. No headroom left for more IT.';
+        document.getElementById('cc2i').innerHTML=svgPeakAtLimit();
+      }
+    }else{
+      if(d.h>=10.5&&d.h<=12){
+        var c3=document.getElementById('cc3');c3.classList.add('show');c3.style.top='14%';
+        document.getElementById('cc3h').innerHTML='❄ CTES Discharging';
+        document.getElementById('cc3h').style.color='#2D80C8';
+        c3.style.borderColor='#2D80C8';
+        document.getElementById('cc3msg').textContent='Stored thermal cooling offsets most of the chiller plant load — chiller plant runs lighter.';
+        document.getElementById('cc3i').innerHTML=svgCTESOffset();
+      }
+      if(d.h>=14&&d.h<=16){
+        var c2s=document.getElementById('cc2');c2s.classList.add('show');c2s.style.top='8%';
+        c2s.style.borderColor='#5AAADE';
+        // Compute the two savings
+        var directMW=d.ibCool||0;
+        var effSavingsMW=Math.max(0,((d.fullCool||0)-directMW)*(1-(d.kwrtImp||d.kwrt)/d.kwrt));
+        var totalAvoidedMW=directMW+effSavingsMW;
+        document.getElementById('cc2h').innerHTML='🏆 Peak — CTES Delivers';
+        document.getElementById('cc2h').style.color='#5AAADE';
+        document.getElementById('cc2msg').innerHTML='CTES removes <strong>'+totalAvoidedMW.toFixed(1)+' MW</strong> of cooling load — direct discharge <em>plus</em> a chiller-plant-efficiency boost. <strong style="color:#FBBF24">Batteries cannot do this</strong>: they shift load, but never reduce cooling demand.';
+        document.getElementById('cc2i').innerHTML=svgPeakWithCTES(directMW,effSavingsMW);
+      }
     }
   }
 }
 
-// ── AMBIENT CHART ─────────────────────────────────────────────────────────────
-function drawAmb(){
-  if(!ON.ambient){document.getElementById('ambWrap').style.display='none';return;}
-  document.getElementById('ambWrap').style.display='';
-  const cv=document.getElementById('ambCanvas');
-  const dpr=window.devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
-  const W=cv.offsetWidth,H=cv.offsetHeight;
-  const L=76,R=68,T=8,B=24;
-  const CW=W-L-R,CH=H-T-B;
-  const xp=h=>L+(h/(N-1))*CW;
-  const yp=t=>T+CH-((t-50)/70)*CH;
-  const pts=AMB.map((v,h)=>({x:xp(h),y:yp(v)}));
-  ctx.clearRect(0,0,W,H);
-  [60,70,80,90,100].forEach(t=>{
-    const y=yp(t);
-    ctx.strokeStyle='rgba(33,38,45,.9)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+CW,y);ctx.stroke();
-    ctx.fillStyle='#39d353';ctx.textAlign='right';ctx.font='10px SF Mono,Consolas,monospace';
-    ctx.fillText(t+' °F',L-6,y+3.5);
+// Inline SVG infographics for popups — small, clean, palette-matched
+function svgHeatRising(){
+  return '<svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect width="240" height="80" rx="6" fill="rgba(0,0,0,0.25)"/>'+
+    // cooling area growing
+    '<path d="M 12 70 Q 70 70, 120 58 T 228 32 L 228 74 L 12 74 Z" fill="rgba(48,82,150,0.5)" opacity="0.9"/>'+
+    // temp line rising on top
+    '<path d="M 12 60 Q 70 60, 120 42 T 228 14" stroke="#FBBF24" stroke-width="3" fill="none" stroke-linecap="round"/>'+
+    '<text x="14" y="16" font-family="Outfit,sans-serif" font-size="11" fill="#FBBF24" font-weight="700">Outside Temp ↑</text>'+
+    '<text x="14" y="32" font-family="Outfit,sans-serif" font-size="11" fill="#88B0E0" font-weight="700">Cooling demand ↑</text>'+
+    '</svg>';
+}
+function svgPeakAtLimit(){
+  // Stacked bar reaching the limit dashed line
+  return '<svg viewBox="0 0 240 110" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect width="240" height="110" rx="6" fill="rgba(0,0,0,0.25)"/>'+
+    // limit line
+    '<line x1="20" y1="16" x2="220" y2="16" stroke="#EF4444" stroke-width="2" stroke-dasharray="6,4"/>'+
+    '<text x="218" y="13" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#EF4444" font-weight="700">'+GL.toFixed(0)+' MW LIMIT</text>'+
+    // stacked bar from y=16 (top, touching limit) downward
+    '<g transform="translate(95,16)">'+
+      '<rect width="60" height="32" fill="rgba(48,82,150,0.85)"/>'+   // cooling — steel blue
+      '<rect y="32" width="60" height="6" fill="rgba(170,62,46,0.88)"/>'+  // anc — terracotta
+      '<rect y="38" width="60" height="50" fill="rgba(14,32,62,0.95)"/>'+  // IT — deep navy
+    '</g>'+
+    // labels
+    '<text x="89" y="35" text-anchor="end" font-family="Outfit,sans-serif" font-size="11" fill="#88B0E0" font-weight="700">Cooling</text>'+
+    '<text x="89" y="52" text-anchor="end" font-family="Outfit,sans-serif" font-size="10" fill="#E48A6A" font-weight="700">Anc</text>'+
+    '<text x="89" y="72" text-anchor="end" font-family="Outfit,sans-serif" font-size="11" fill="#8298B4" font-weight="700">IT Load</text>'+
+    '</svg>';
+}
+function svgCTESOffset(){
+  // Bar with CTES (white hatched) covering most cooling, small chiller portion
+  return '<svg viewBox="0 0 240 110" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><pattern id="hatch1" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">'+
+      '<rect width="6" height="6" fill="rgba(40,80,158,0.12)"/>'+
+      '<line x1="0" y1="0" x2="0" y2="6" stroke="rgba(90,160,220,0.8)" stroke-width="1.5"/>'+
+    '</pattern></defs>'+
+    '<rect width="240" height="110" rx="6" fill="rgba(0,0,0,0.25)"/>'+
+    '<line x1="20" y1="16" x2="220" y2="16" stroke="#EF4444" stroke-width="2" stroke-dasharray="6,4"/>'+
+    '<text x="218" y="13" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#EF4444" font-weight="700">'+GL.toFixed(0)+' MW LIMIT</text>'+
+    '<g transform="translate(95,18)">'+
+      '<rect width="60" height="22" fill="url(#hatch1)" stroke="rgba(90,170,222,0.85)" stroke-width="1.5" stroke-dasharray="4,3"/>'+  // CTES avoided (blue)
+      '<rect y="22" width="60" height="10" fill="rgba(48,82,150,0.85)"/>'+   // chiller (steel blue, smaller)
+      '<rect y="32" width="60" height="6" fill="rgba(170,62,46,0.88)"/>'+    // anc — terracotta
+      '<rect y="38" width="60" height="46" fill="rgba(14,32,62,0.95)"/>'+   // IT base — deep navy
+      '<rect y="38" width="60" height="4" fill="rgba(255,255,255,0.90)"/>'+    // unlock thin slice
+    '</g>'+
+    '<text x="89" y="34" text-anchor="end" font-family="Outfit,sans-serif" font-size="11" fill="#5AAADE" font-weight="700">CTES</text>'+
+    '<text x="89" y="46" text-anchor="end" font-family="Outfit,sans-serif" font-size="10" fill="#88B0E0" font-weight="700">Chiller plant</text>'+
+    '<text x="89" y="70" text-anchor="end" font-family="Outfit,sans-serif" font-size="11" fill="#8298B4" font-weight="700">IT + Added</text>'+
+    '</svg>';
+}
+function svgPeakWithCTES(directMW,effSavingsMW){
+  directMW=directMW||0;effSavingsMW=effSavingsMW||0;
+  var total=directMW+effSavingsMW;if(total<0.1)total=0.1;
+  var barW=200,barX=20;
+  var w1=Math.round(barW*directMW/total);
+  var w2=barW-w1;
+  // Enforce minimum widths so both segments stay readable
+  if(w2<36){w2=36;w1=barW-w2}
+  if(w1<36){w1=36;w2=barW-w1}
+  var seg1Mid=barX+w1/2,seg2Mid=barX+w1+w2/2;
+  return '<svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs>'+
+      '<pattern id="hatch3" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">'+
+        '<rect width="6" height="6" fill="rgba(40,80,158,0.12)"/>'+
+        '<line x1="0" y1="0" x2="0" y2="6" stroke="rgba(90,160,220,0.8)" stroke-width="1.5"/>'+
+      '</pattern>'+
+    '</defs>'+
+    '<rect width="240" height="200" rx="6" fill="rgba(0,0,0,0.28)"/>'+
+    // Title
+    '<text x="20" y="22" font-family="Outfit,sans-serif" font-size="11" fill="#94A3B8" font-weight="600" letter-spacing="0.5">COOLING POWER AVOIDED</text>'+
+    '<text x="20" y="52" font-family="JetBrains Mono,monospace" font-size="28" fill="#5AAADE" font-weight="800">'+total.toFixed(1)+' MW</text>'+
+    // Composition bar
+    '<g transform="translate('+barX+',72)">'+
+      '<rect x="0" y="0" width="'+w1+'" height="34" fill="url(#hatch3)" stroke="rgba(90,170,222,0.85)" stroke-width="1.5" stroke-dasharray="4,3"/>'+
+      '<rect x="'+w1+'" y="0" width="'+w2+'" height="34" fill="rgba(210,148,18,0.75)"/>'+
+    '</g>'+
+    // Segment values
+    '<text x="'+seg1Mid+'" y="123" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" fill="#FFFFFF" font-weight="800">'+directMW.toFixed(1)+' MW</text>'+
+    '<text x="'+seg1Mid+'" y="139" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" fill="#FFFFFF" opacity="0.85" font-weight="600">❄ Direct discharge</text>'+
+    '<text x="'+seg2Mid+'" y="123" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" fill="#F5C028" font-weight="800">'+effSavingsMW.toFixed(1)+' MW</text>'+
+    '<text x="'+seg2Mid+'" y="139" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" fill="#F5C028" font-weight="600">⚡ Chiller plant efficiency</text>'+
+    // Divider
+    '<line x1="20" y1="158" x2="220" y2="158" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>'+
+    // Footnote — the differentiator
+    '<text x="120" y="178" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" fill="#FBBF24" font-weight="700">vs. batteries:</text>'+
+    '<text x="120" y="193" text-anchor="middle" font-family="Outfit,sans-serif" font-size="10" fill="#94A3B8" font-style="italic">batteries shift load — CTES removes it</text>'+
+    '</svg>';
+}
+
+function hideCallouts(){
+  document.getElementById('cc1').classList.remove('show');
+  document.getElementById('cc2').classList.remove('show');
+  document.getElementById('cc3').classList.remove('show');
+  // Reset cc2 colors (problem mode default)
+  document.getElementById('cc2').style.borderColor='#E53935';
+  document.getElementById('cc2h').style.color='#E53935';
+}
+
+function checkPause(){
+  var pts=pausePts[mode];if(nextPause>=pts.length)return false;
+  if(progress>=pts[nextPause]){nextPause++;paused=true;playing=false;cancelAnimationFrame(af);
+    updateBigBtn();draw();updateUI();document.getElementById('tlfill').style.width=(progress*100)+'%';return true}
+  return false;
+}
+function recalcPause(){var pts=pausePts[mode];nextPause=0;for(var i=0;i<pts.length;i++)if(progress>=pts[i]+0.005)nextPause=i+1}
+
+function updateBigBtn(){
+  var btn=document.getElementById('bigBtn');
+  var po=document.getElementById('pauseOverlay');
+  if(paused){
+    btn.textContent='▶ Continue';btn.className='big-btn btn-play';
+    po.classList.add('visible');
+  }else{
+    po.classList.remove('visible');
+    if(!playing&&progress>=0.99){
+      if(mode==='problem'){btn.innerHTML='Next: With CTES →';btn.className='big-btn btn-next'}
+      else{btn.innerHTML='↺ Restart';btn.className='big-btn btn-restart'}
+    }else if(playing){btn.textContent='⏸ Pause';btn.className='big-btn btn-play'}
+    else{btn.textContent='▶ Play';btn.className='big-btn btn-play'}
+  }
+}
+
+function togglePlay(){
+  if(paused){paused=false;progress+=0.005;playing=true;lt=performance.now();af=requestAnimationFrame(tick);updateBigBtn();return}
+  playing=!playing;
+  if(playing){if(progress>=0.99){progress=0;nextPause=0}lt=performance.now();af=requestAnimationFrame(tick)}
+  else cancelAnimationFrame(af);
+  updateBigBtn();
+}
+
+function tick(now){
+  if(!playing)return;var dt=(now-lt)/1000;lt=now;
+  progress+=dt*speed*0.0156;
+  if(progress>=1){progress=1;playing=false;
+    if(mode==='problem'){document.getElementById('transitionOverlay').classList.add('visible')}
+    updateBigBtn();draw();updateUI();document.getElementById('tlfill').style.width='100%';return}
+  if(checkPause())return;
+  draw();updateUI();document.getElementById('tlfill').style.width=(progress*100)+'%';
+  af=requestAnimationFrame(tick);
+}
+
+function setSpeed(s){speed=s;document.querySelectorAll('.sp button').forEach(function(b){b.classList.remove('on')});document.getElementById('s'+s).classList.add('on')}
+
+function setMode(m){
+  mode=m;progress=0;paused=false;nextPause=0;started=true;
+  document.getElementById('overlay').classList.add('hidden');
+  document.getElementById('transitionOverlay').classList.remove('visible');
+  document.getElementById('tlfill').className=m==='problem'?'tl-fill':'tl-fill sol';
+  document.getElementById('chartSub').textContent=m==='problem'?'— without CTES':'— with CTES ('+C_IB.toFixed(1)+' MW)';
+  // Show capacity indicator only in solution mode
+  var ibInd=document.getElementById('ibIndicator');
+  if(m==='solution'){
+    ibInd.classList.add('show');
+    document.getElementById('ibUnlockVal').innerHTML='+'+IT_UNLOCK.toFixed(1)+' MW<span class="ib-pct" id="ibUnlockPct">('+Math.round(IT_UNLOCK_PCT*1000)/10+'%)</span>';
+  }else{ibInd.classList.remove('show')}
+  var b=document.getElementById('badge'),t=document.getElementById('topTitle');
+  if(m==='problem'){b.className='step-badge sb1';b.textContent='DESIGN DAY · STEP 1 OF 2';t.innerHTML='Design Day Without CTES — <span style="color:var(--grayL)">The Constraint</span>';
+    document.getElementById('pcStep').textContent='Step 1 of 2';document.getElementById('pcTitle').textContent='The Design Day Problem';
+    document.getElementById('pcDesc').textContent='Your data center has a '+GL.toFixed(1)+' MW operational limit, but on the hottest day, cooling demand pushes total power right up to the ceiling. You can only sell '+C_NO.toFixed(1)+' MW of compute.';
+  }else{b.className='step-badge sb2';b.textContent='DESIGN DAY · STEP 2 OF 2';t.innerHTML='Design Day With CTES — <span style="color:var(--teal)">Problem Solved</span>';
+    document.getElementById('pcStep').textContent='Step 2 of 2';document.getElementById('pcTitle').textContent='CTES Tames the Peak';
+    document.getElementById('pcDesc').textContent='CTES charges overnight using spare grid capacity, then discharges stored cooling at peak — unlocking an additional '+IT_UNLOCK.toFixed(1)+' MW of IT capacity.';
+  }
+  draw();updateUI();document.getElementById('tlfill').style.width='0%';updateBigBtn();
+}
+
+// Big button logic
+document.getElementById('bigBtn').addEventListener('click',function(){
+  if(!started){document.getElementById('overlay').classList.add('hidden');started=true;togglePlay();return}
+  if(paused){togglePlay();return}
+  if(!playing&&progress>=0.99){
+    if(mode==='problem'){setMode('solution');setTimeout(function(){togglePlay()},300);return}
+    else{setMode('problem');return}
+  }
+  togglePlay();
+});
+
+// Overlay
+document.getElementById('ovBtn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('overlay').classList.add('hidden');started=true;togglePlay()});
+document.getElementById('overlay').addEventListener('click',function(){document.getElementById('overlay').classList.add('hidden');started=true;togglePlay()});
+
+
+document.getElementById('pauseOverlay').addEventListener('click',function(){if(paused)togglePlay();});
+document.getElementById('trBtn').addEventListener('click',function(){
+  document.getElementById('transitionOverlay').classList.remove('visible');
+  setMode('solution');setTimeout(function(){togglePlay()},300);
+});
+
+// Timeline scrub
+var tlbg=document.getElementById('tlbg'),drag=false;
+tlbg.addEventListener('click',function(e){var r=tlbg.getBoundingClientRect();progress=clamp((e.clientX-r.left)/r.width,0,1);paused=false;recalcPause();draw();updateUI();document.getElementById('tlfill').style.width=(progress*100)+'%';updateBigBtn()});
+tlbg.addEventListener('mousedown',function(){drag=true});
+document.addEventListener('mousemove',function(e){if(!drag)return;var r=tlbg.getBoundingClientRect();progress=clamp((e.clientX-r.left)/r.width,0,1);paused=false;recalcPause();draw();updateUI();document.getElementById('tlfill').style.width=(progress*100)+'%'});
+document.addEventListener('mouseup',function(){drag=false;updateBigBtn()});
+tlbg.addEventListener('touchstart',function(e){drag=true;e.preventDefault()},{passive:false});
+document.addEventListener('touchmove',function(e){if(!drag)return;var t=e.touches[0];var r=tlbg.getBoundingClientRect();progress=clamp((t.clientX-r.left)/r.width,0,1);paused=false;recalcPause();draw();updateUI();document.getElementById('tlfill').style.width=(progress*100)+'%'});
+document.addEventListener('touchend',function(){drag=false;updateBigBtn()});
+
+draw();updateUI();updateBigBtn();
+
+// ── Config page slider logic ──────────────────────────────────
+(function(){
+  var itSlider  = document.getElementById('cfgIt');
+  var pueSlider = document.getElementById('cfgPue');
+
+  function calcPeakCool(it, pue){
+    var anc = it * 0.075;
+    return Math.max(0.3, it*(pue-1) - anc);
+  }
+  function calcGL(it, pue){
+    return parseFloat((it + it*0.075 + calcPeakCool(it,pue)*1.05).toFixed(1));
+  }
+  function calcUnlock(it){ return parseFloat((it*0.105).toFixed(2)); }
+  function calcNightCool(it, pue){
+    // night PUE = peak - 0.20
+    var minPUE = Math.max(1.05, pue - 0.20);
+    var anc=it*0.075;
+    return Math.max(0.3, it*(minPUE-1)-anc);
+  }
+
+  function updateDerived(){
+    var it  = parseFloat(itSlider.value);
+    var pue = parseFloat(pueSlider.value);
+    document.getElementById('cfgItVal').innerHTML  = it.toFixed(1)+' <span>MW</span>';
+    document.getElementById('cfgPueVal').innerHTML = pue.toFixed(2)+' <span>at peak</span>';
+    var gl = calcGL(it,pue);
+    var unlock = calcUnlock(it);
+    var peakCool = calcPeakCool(it,pue);
+    var nightCool = calcNightCool(it, pue);
+    document.getElementById('cfgGL').textContent       = gl.toFixed(1)+' MW';
+    document.getElementById('cfgUnlock').textContent   = unlock.toFixed(1)+' MW (+'+Math.round(10.5)+'%)';
+    document.getElementById('cfgCoolPeak').textContent = peakCool.toFixed(1)+' MW';
+    document.getElementById('cfgCoolNight').textContent= calcNightCool(it,pue).toFixed(1)+' MW';
+  }
+
+  itSlider.addEventListener('input', updateDerived);
+  pueSlider.addEventListener('input', updateDerived);
+  updateDerived(); // initial render
+
+  document.getElementById('cfgRunBtn').addEventListener('click', function(){
+    var it  = parseFloat(itSlider.value);
+    var pue = parseFloat(pueSlider.value);
+    // Apply to simulation
+    deriveConstants(it, pue);
+    rebuild();
+    // Reset simulation state
+    mode='problem';progress=0;paused=false;nextPause=0;started=false;playing=false;
+    cancelAnimationFrame(af);
+    // Update static UI strings immediately
+    document.getElementById('chartSub').textContent='— without CTES';
+    document.getElementById('badge').className='step-badge sb1';
+    document.getElementById('badge').textContent='DESIGN DAY · STEP 1 OF 2';
+    document.getElementById('topTitle').innerHTML='Design Day Without CTES — <span style="color:var(--grayL)">The Constraint</span>';
+    document.getElementById('pcStep').textContent='Step 1 of 2';
+    document.getElementById('pcTitle').textContent='The Design Day Problem';
+    document.getElementById('pcDesc').textContent='Your data center has a '+GL.toFixed(1)+' MW operational limit, but on the hottest day, cooling demand pushes total power right up to the ceiling. You can only sell '+C_NO.toFixed(1)+' MW of compute.';
+    document.getElementById('tlfill').className='tl-fill';
+    document.getElementById('tlfill').style.width='0%';
+    document.getElementById('ibIndicator').classList.remove('show');
+    document.getElementById('overlay').classList.remove('hidden');
+    // Hide config page
+    var pg=document.getElementById('configPage');
+    pg.classList.add('hidden');
+    setTimeout(function(){pg.style.display='none'},500);
+    draw();updateUI();updateBigBtn();
   });
-  for(let h=0;h<N;h++){
-    const x=xp(h);
-    if(h%4===0){
-      ctx.strokeStyle='rgba(33,38,45,.9)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+CH);ctx.stroke();
-      if(HL[h]) ctx.fillStyle='#484f58',ctx.textAlign='center',ctx.font='10px SF Mono,Consolas,monospace',ctx.fillText(HL[h],x,T+CH+16);
-    } else {
-      ctx.strokeStyle='rgba(33,38,45,.45)';ctx.lineWidth=0.5;
-      ctx.beginPath();ctx.moveTo(x,T+CH-4);ctx.lineTo(x,T+CH);ctx.stroke();
-    }
-  }
-  ctx.strokeStyle='#21262d';ctx.lineWidth=1;ctx.strokeRect(L,T,CW,CH);
-  ctx.save();ctx.fillStyle='#39d353';ctx.font='10px SF Mono,Consolas,monospace';
-  ctx.translate(L-58,T+CH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('°F',0,0);ctx.restore();
-  // DR window highlight
-  const drA=(drStart-6)*4,drB=(drEnd-6)*4;
-  ctx.fillStyle='rgba(96,165,250,0.06)';
-  ctx.fillRect(xp(drA),T,xp(drB)-xp(drA),CH);
-  ctx.save();ctx.beginPath();ctx.rect(L,T,CW,CH);ctx.clip();
-  const g=ctx.createLinearGradient(0,T,0,T+CH);
-  g.addColorStop(0,'rgba(57,211,83,.18)');g.addColorStop(1,'rgba(57,211,83,.02)');
-  ctx.beginPath();spline(ctx,pts);
-  ctx.lineTo(pts[N-1].x,T+CH);ctx.lineTo(pts[0].x,T+CH);ctx.closePath();
-  ctx.fillStyle=g;ctx.fill();
-  ctx.beginPath();spline(ctx,pts);
-  ctx.strokeStyle='#39d353';ctx.lineWidth=2;ctx.stroke();
-  pts.filter((_,i)=>i%4===0).forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fillStyle='#39d353';ctx.fill();ctx.strokeStyle='#0d1117';ctx.lineWidth=1.8;ctx.stroke();});
-  ctx.restore();
-}
+})();
 
-function redraw(){drawMain();drawAmb();}
-
-// ── STATS + INSIGHT ───────────────────────────────────────────────────────────
-function stats(kwT){
-  const{peakDirMW, peakIndMW, totalDirMWh, totalIndMWh, totalRth}=breakdown(kwT);
-  const totalRed=Math.max(0,PEAK-kwT);   // instantaneous MW at peak hour
-  const disHours=drEnd-drStart;
-
-  document.getElementById('sBase').textContent=fmt(PEAK);
-
-  if(S>0&&totalRed>0.5){
-    const indPct=totalRed>0?(peakIndMW/totalRed*100).toFixed(0):'0';
-    document.getElementById('sShaved').textContent=fmt(kwT);
-    document.getElementById('sSub').textContent='instantaneous at peak hour';
-    document.getElementById('sDirect').textContent=fmt(peakDirMW);
-    document.getElementById('sIndirect').textContent=fmt(peakIndMW);
-    document.getElementById('sIndPct').textContent=indPct+'% of peak-hour savings';
-    document.getElementById('sWin').textContent=(S/Math.max(1,totalRed)).toFixed(1)+' RT-h/kW';
-    document.getElementById('sWinR').textContent=hLabel(drStart)+' – '+hLabel(drEnd)+' · '+disHours+' h';
-
-    const fmtMWh = mwh => (mwh/1000).toFixed(2)+' MWh';
-    const avgLoad = totalRth>0?(BLOAD - BLOAD*totalRth/RT/Math.max(1,disHours)).toFixed(0):BLOAD;
-    document.getElementById('insight').innerHTML=
-      `DR window <span class="dr">${hLabel(drStart)} – ${hLabel(drEnd)}</span> · `+
-      `<span class="a">${S.toLocaleString()} RT-h</span> of IceBrick.`+
-      ` Peak demand: <span class="p">${fmt(PEAK)}</span> → <span class="a">${fmt(kwT)}</span>`+
-      ` (<span class="g">−${fmt(totalRed)}, −${(totalRed/PEAK*100).toFixed(1)}%</span>).`+
-      ` At peak hour: <span class="a">${fmt(peakDirMW)} direct</span> (storage displaces tons)`+
-      ` + <span class="c">${fmt(peakIndMW)} indirect</span> (efficiency bonus, ${indPct}% of savings).`+
-      ` Over full window: <span class="a">${fmtMWh(totalDirMWh)} direct</span>`+
-      ` + <span class="c">${fmtMWh(totalIndMWh)} indirect</span> energy reduction.`+
-      ` Avg chiller load during DR: ~${avgLoad}%.`+
-      ` RT-h used: <b>${Math.round(totalRth).toLocaleString()}</b> of ${S.toLocaleString()}.`+
-      ` <span style="color:#484f58">Ratio: ${(S/Math.max(1,totalRed)).toFixed(1)} RT-h per kW peak reduction.</span>`;
-  } else {
-    document.getElementById('sShaved').textContent='—';
-    document.getElementById('sSub').textContent='set storage →';
-    document.getElementById('sDirect').textContent='—';
-    document.getElementById('sIndirect').textContent='—';
-    document.getElementById('sIndPct').textContent='efficiency improvement';
-    document.getElementById('sWin').textContent='—';
-    document.getElementById('sWinR').textContent=hLabel(drStart)+' – '+hLabel(drEnd);
-    document.getElementById('insight').innerHTML=
-      `At <b>${RT.toLocaleString()} RT</b> IT load (${BLOAD}% chiller load), demand runs`+
-      ` <span class="p">${fmt(BASE[0])} at 6 am</span> (76 °F · <span class="o">${KR[0].toFixed(2)} kW/TR</span>)`+
-      ` → <span class="p">${fmt(PEAK)} at peak</span> (101 °F · <span class="o">${Math.max(...KR).toFixed(2)} kW/TR</span>).`+
-      ` Adjust <span class="a">IceBrick storage</span> and set the <span class="dr">DR window</span> to animate peak shaving.`+
-      ` The <span class="c">cyan zone</span> shows the indirect efficiency bonus from reduced chiller load during discharge.`;
-  }
-}
-
-// ── ANIMATION ─────────────────────────────────────────────────────────────────
-function ease(t){return 1-Math.pow(1-t,3);}
-function doAnim(from,to){
-  if(rafId) cancelAnimationFrame(rafId);
-  const t0=performance.now(),DUR=900;
-  function go(now){
-    const p=Math.min((now-t0)/DUR,1);
-    animTgt=from+(to-from)*ease(p);
-    redraw();stats(animTgt);
-    if(p<1) rafId=requestAnimationFrame(go);
-    else{animTgt=to;redraw();stats(to);}
-  }
-  rafId=requestAnimationFrame(go);
-}
-
-// ── TOGGLES ───────────────────────────────────────────────────────────────────
-function tog(name){
-  ON[name]=!ON[name];
-  document.getElementById('btn-'+name).className='btn '+(ON[name]?'on':'off');
-  redraw();
-}
-
-// ── INIT BASELINE ─────────────────────────────────────────────────────────────
-function init(){
-  BASE=KR.map(r=>r*RT);
-  PEAK=Math.max(...BASE);
-  const tgt=S>0?solve(S):PEAK;
-  animTgt=tgt;
-  redraw();stats(tgt);
-}
-
-// ── SLIDERS ───────────────────────────────────────────────────────────────────
-document.getElementById('rtSlider').addEventListener('input',function(){
-  RT=+this.value;
-  document.getElementById('rtVal').textContent=RT.toLocaleString();
-  BASE=KR.map(r=>r*RT); PEAK=Math.max(...BASE);
-  animTgt=S>0?solve(S):PEAK;
-  redraw();stats(animTgt);
-});
-
-document.getElementById('sSlider').addEventListener('input',function(){
-  S=+this.value;
-  document.getElementById('sVal').textContent=S.toLocaleString();
-  doAnim(animTgt,S>0?solve(S):PEAK);
-});
-
-document.getElementById('drSSlider').addEventListener('input',function(){
-  drStart=+this.value;
-  if(drStart>=drEnd){drEnd=drStart+1;document.getElementById('drESlider').value=drEnd;}
-  document.getElementById('drSVal').textContent=hLabel(drStart);
-  document.getElementById('drEVal').textContent=hLabel(drEnd);
-  doAnim(animTgt,S>0?solve(S):PEAK);
-});
-
-document.getElementById('drESlider').addEventListener('input',function(){
-  drEnd=+this.value;
-  if(drEnd<=drStart){drStart=drEnd-1;document.getElementById('drSSlider').value=drStart;}
-  document.getElementById('drSVal').textContent=hLabel(drStart);
-  document.getElementById('drEVal').textContent=hLabel(drEnd);
-  doAnim(animTgt,S>0?solve(S):PEAK);
-});
-
-window.addEventListener('resize',()=>redraw());
-
-// ── TOOLTIP + HAIRLINE ────────────────────────────────────────────────────────
-function idxTime(h){
-  const hour=Math.floor(6+h/4), min=(h%4)*15;
-  const h12=hour===12?12:hour>12?hour-12:hour;
-  return h12+':'+String(min).padStart(2,'0')+(hour<12?' am':' pm');
-}
-
-function drawHair(h){
-  const cv=document.getElementById('hairCanvas');
-  const dpr=window.devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr; cv.height=cv.offsetHeight*dpr;
-  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-  const W=cv.offsetWidth,H=cv.offsetHeight;
-  const L=76,T=14,B=28,R=68,CW=W-L-R,CH=H-T-B;
-  ctx.clearRect(0,0,W,H);
-  const x=L+(h/(N-1))*CW;
-  // Vertical hairline
-  ctx.strokeStyle='rgba(255,255,255,0.22)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
-  ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+CH);ctx.stroke();ctx.setLineDash([]);
-  // Dot on baseline curve
-  const kwMax=Math.ceil(PEAK/200)*200+200;
-  const yBase=T+CH-(BASE[h]/kwMax)*CH;
-  ctx.beginPath();ctx.arc(x,yBase,4.5,0,Math.PI*2);
-  ctx.fillStyle='#d2a8ff';ctx.fill();
-  ctx.strokeStyle='#0d1117';ctx.lineWidth=2;ctx.stroke();
-  // Dot on kW/TR curve (right axis)
-  const yKr=T+CH-(KR[h]/1.6)*CH;
-  ctx.beginPath();ctx.arc(x,yKr,4,0,Math.PI*2);
-  ctx.fillStyle='#ffffff';ctx.fill();
-  ctx.strokeStyle='#0d1117';ctx.lineWidth=2;ctx.stroke();
-}
-
-function clearHair(){
-  const cv=document.getElementById('hairCanvas');
-  const ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,cv.width,cv.height);
-}
-
-function showTip(cx,cy,h){
-  const base=BASE[h], amb=AMB[h], kr=KR[h];
-  const drA=(drStart-6)*4, drB=(drEnd-6)*4;
-  const inDR=h>=drA&&h<drB;
-  const shaving=S>0&&animTgt<PEAK-1;
-
-  let rows=`<div style="color:#484f58;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">${idxTime(h)}</div>`;
-  const row=(lbl,val,c='#c9d1d9')=>`<div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px"><span style="color:#484f58">${lbl}</span><span style="color:${c}">${val}</span></div>`;
-  rows += row('Ambient',amb.toFixed(1)+' °F','#39d353');
-  rows += row('Baseline',fmt(base),'#d2a8ff');
-  rows += row('kW/TR',kr.toFixed(2)+' kW/TR','#ffffff');
-
-  if(shaving&&inDR&&base>animTgt){
-    const q_s=findQs(h,animTgt);
-    const nek=noEffKw(h,q_s);
-    const dirKW=q_s*KR[h], indKW=nek-animTgt;
-    rows+=`<div style="border-top:1px solid #21262d;margin:6px 0 5px"></div>`;
-    rows+=row('Shaved demand',fmt(animTgt),'#ffffff');
-    rows+=row('↓ Direct',fmt(dirKW),'#ffffff');
-    rows+=row('↓ Indirect',fmt(indKW),'#38bdf8');
-  }
-
-  const tt=document.getElementById('tip');
-  tt.innerHTML=rows; tt.style.display='block';
-  const tw=220, pad=14;
-  let tx=cx+pad, ty=cy-14;
-  if(tx+tw>window.innerWidth-8) tx=cx-tw-pad;
-  if(ty+180>window.innerHeight) ty=window.innerHeight-185;
-  tt.style.left=tx+'px'; tt.style.top=ty+'px';
-}
-
-function hideTip(){
-  document.getElementById('tip').style.display='none';
-  clearHair();
-}
-
-document.getElementById('mainCanvas').addEventListener('mousemove',function(e){
-  const rect=this.getBoundingClientRect();
-  const mx=e.clientX-rect.left;
-  const L=76, CW=this.offsetWidth-76-68;
-  if(mx<L||mx>L+CW){hideTip();return;}
-  const h=Math.max(0,Math.min(N-1,Math.round((mx-L)/CW*(N-1))));
-  drawHair(h);
-  showTip(e.clientX,e.clientY,h);
-});
-document.getElementById('mainCanvas').addEventListener('mouseleave',hideTip);
-
-init();
+}); // end DOMContentLoaded
 </script>
-<div id="tip" style="position:fixed;pointer-events:none;display:none;z-index:999;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px 14px;font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#c9d1d9;min-width:210px;box-shadow:0 4px 16px rgba(0,0,0,.5)"></div>
 </body>
 </html>
